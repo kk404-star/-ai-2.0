@@ -1,0 +1,6 @@
+{
+  "name": "开窍 AI 学伴",
+  "description": "专为初高中生设计的理科 AI 智能学习与辅导 App，提供双轴知识点学习、拍照批改、精选题库、错题本复练及智能学习诊断。",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
