@@ -331,15 +331,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* Floating Action Button for Photo Scan (STAYS STRICTLY INSIDE MOBILE CONTAINER) */}
-      <button
-        onClick={() => onNavigateToScreen('photo_scan')}
-        className="sticky bottom-4 ml-auto w-13 h-13 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-[0_8px_20px_rgba(5,150,105,0.4)] flex items-center justify-center active:scale-90 transition-all z-40"
-        title="拍照批改"
-      >
-        <Camera className="w-6 h-6" />
-      </button>
-
       {/* Check-In Calendar & Study Review Modal */}
       <CheckInCalendarModal
         isOpen={isCalendarOpen}

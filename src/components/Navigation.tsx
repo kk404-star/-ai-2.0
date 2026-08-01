@@ -1,17 +1,19 @@
 import React from 'react';
-import { Home, BookOpen, Layers, User } from 'lucide-react';
+import { Home, BookOpen, Layers, User, Camera } from 'lucide-react';
 import { TabType } from '../types';
 
 interface NavigationProps {
   activeTab: TabType;
   unreviewedWrongCount?: number;
   onTabChange: (tab: TabType) => void;
+  onScanClick?: () => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
   activeTab,
   unreviewedWrongCount = 0,
   onTabChange,
+  onScanClick,
 }) => {
   const navItems = [
     {
@@ -23,6 +25,12 @@ export const Navigation: React.FC<NavigationProps> = ({
       id: 'study' as TabType,
       label: '学习',
       icon: BookOpen,
+    },
+    {
+      id: 'scan',
+      label: '拍照批改',
+      icon: Camera,
+      isCenterAction: true,
     },
     {
       id: 'wrong' as TabType,
@@ -38,34 +46,57 @@ export const Navigation: React.FC<NavigationProps> = ({
   ];
 
   return (
-    <nav className="sticky bottom-0 left-0 right-0 w-full z-40 flex justify-around items-center pt-2 pb-2.5 px-4 bg-white/95 backdrop-blur-md rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.06)] border-t border-slate-100">
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = activeTab === item.id;
-
-        return (
-          <button
-            key={item.id}
-            onClick={() => onTabChange(item.id)}
-            className={`relative flex flex-col items-center justify-center py-1.5 px-3 transition-all duration-200 active:scale-95 ${
-              isActive
-                ? 'text-emerald-700 font-bold scale-105'
-                : 'text-slate-500 hover:text-emerald-600 font-medium'
-            }`}
-          >
-            <div className="relative">
-              <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-              {item.badge && (
-                <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
-                  {item.badge}
+    <nav className="sticky bottom-0 left-0 right-0 w-full z-40 bg-white/95 backdrop-blur-md rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.06)] border-t border-slate-100 px-1 pt-1.5 pb-2">
+      <div className="grid grid-cols-5 items-end text-center">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          
+          if (item.isCenterAction) {
+            return (
+              <button
+                key="center-scan"
+                type="button"
+                onClick={onScanClick}
+                className="flex flex-col items-center justify-end -mt-3.5 transition-transform active:scale-95 group"
+                title="拍照批改 / 搜题"
+              >
+                <div className="w-11 h-11 rounded-full bg-emerald-600 group-hover:bg-emerald-700 text-white shadow-[0_4px_14px_rgba(5,150,105,0.4)] border-2 border-white flex items-center justify-center transition-all">
+                  <Camera className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <span className="text-[10px] font-bold text-emerald-700 mt-1">
+                  {item.label}
                 </span>
-              )}
-            </div>
-            <span className="text-[11px] mt-1">{item.label}</span>
-          </button>
-        );
-      })}
+              </button>
+            );
+          }
+
+          const isActive = activeTab === item.id;
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => onTabChange(item.id as TabType)}
+              className={`relative flex flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95 ${
+                isActive
+                  ? 'text-emerald-700 font-bold'
+                  : 'text-slate-500 hover:text-emerald-600 font-medium'
+              }`}
+            >
+              <div className="relative">
+                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                {item.badge && (
+                  <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
+              <span className="text-[11px] mt-1">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 };
+
 

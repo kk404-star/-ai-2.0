@@ -286,6 +286,7 @@ export default function App() {
           activeTab={activeTab}
           unreviewedWrongCount={student.unreviewedWrongCount}
           onTabChange={(tab) => setActiveTab(tab)}
+          onScanClick={() => setActiveScreen('photo_scan')}
         />
       )}
     </MobileFrame>

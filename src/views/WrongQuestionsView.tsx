@@ -259,15 +259,6 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
           })
         )}
       </div>
-
-      {/* Floating Action Button for Photo Input */}
-      <button
-        onClick={() => onNavigateToScreen('photo_scan')}
-        className="fixed bottom-20 right-6 w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-[0_8px_20px_rgba(5,150,105,0.4)] flex items-center justify-center active:scale-90 transition-all z-40"
-        title="拍照录入错题"
-      >
-        <Camera className="w-6 h-6" />
-      </button>
     </div>
   );
 };
