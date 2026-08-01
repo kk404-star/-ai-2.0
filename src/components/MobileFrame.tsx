@@ -38,7 +38,7 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({ children }) => {
       <div
         className={`w-full transition-all duration-300 ${
           isMobileDeviceView
-            ? 'max-w-[420px] min-h-[850px] bg-slate-50 md:rounded-[44px] md:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] md:border-[10px] md:border-slate-800 relative overflow-hidden flex flex-col'
+            ? 'max-w-[390px] min-h-[720px] md:h-[800px] bg-slate-50 md:rounded-[40px] md:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.5)] md:border-[8px] md:border-slate-800 relative overflow-hidden flex flex-col'
             : 'max-w-4xl min-h-screen bg-slate-50 md:rounded-2xl md:shadow-2xl relative overflow-hidden flex flex-col'
         }`}
       >

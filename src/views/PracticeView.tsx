@@ -120,7 +120,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   };
 
   return (
-    <div className="px-5 pt-4 pb-32 space-y-4 animate-fade-in relative min-h-screen">
+    <div className="px-5 pt-4 pb-28 space-y-4 animate-fade-in relative min-h-full">
       {/* Top Header Navigation */}
       <div className="flex justify-between items-center gap-2 bg-white px-3.5 py-2.5 rounded-2xl border border-slate-200/80 card-shadow">
         <button
