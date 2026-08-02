@@ -81,6 +81,24 @@
   scrollbar-width: none;
 }
 
+/* Fixed actions inside the 390px mobile preview must stay narrower than its clipped viewport. */
+.mobile-fixed-footer {
+  position: fixed;
+  left: 50%;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  z-index: 40;
+  width: calc(100% - 1.5rem);
+  max-width: 366px;
+  transform: translateX(-50%);
+  padding: 0.625rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.95);
+  box-shadow: 0 10px 24px -8px rgb(15 23 42 / 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 .math-tex {
   font-family: 'Times New Roman', Times, serif;
   font-style: italic;
@@ -94,4 +112,3 @@
 .animate-bounce-x {
   animation: bounce-x 1.2s infinite ease-in-out;
 }
-

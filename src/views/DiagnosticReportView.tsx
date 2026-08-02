@@ -85,7 +85,7 @@ const RadarChartGraphic: React.FC<{ subject: string }> = ({ subject }) => {
   const webRings = [0.33, 0.66, 1.0];
 
   return (
-    <div className="relative w-32 h-32 shrink-0 flex items-center justify-center select-none overflow-hidden">
+    <div className="relative w-28 h-28 shrink-0 flex items-center justify-center select-none overflow-hidden">
       <svg viewBox="0 0 120 120" className="w-full h-full overflow-hidden">
         <defs>
           <radialGradient id="radarBgGrad" cx="50%" cy="50%" r="50%">
@@ -267,9 +267,9 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
   ];
 
   return (
-    <div className="px-4 pt-3 pb-32 space-y-3.5 animate-fade-in">
+    <div className="px-4 pt-3 pb-24 space-y-3 animate-fade-in">
       {/* 1. Header Bar: Clean Title & Time Range Pill Switch */}
-      <div className="bg-white p-3.5 rounded-2xl card-shadow border border-slate-200/80 flex items-center justify-between gap-2">
+      <div className="bg-white p-3 rounded-2xl card-shadow border border-slate-200/80 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-8 h-8 rounded-xl bg-emerald-100/80 flex items-center justify-center shrink-0">
             <Sparkles className="w-4.5 h-4.5 text-emerald-600" />
@@ -298,13 +298,8 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
       </div>
 
       {/* 2. Full Subject Scrollable Pill Bar (全科, 数学, 物理...) */}
-      <div className="bg-white p-2.5 rounded-2xl card-shadow border border-slate-200/80 space-y-1.5">
-        <div className="flex items-center justify-between text-xs px-1 font-bold text-slate-700">
-          <span>全科诊断维度</span>
-          <span className="text-[10px] text-slate-400 font-normal">点击切换查看学科诊断</span>
-        </div>
-
-        <div className="flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-0.5">
+      <div className="bg-white p-2 rounded-2xl card-shadow border border-slate-200/80">
+        <div className="flex items-center gap-1.5 overflow-x-auto hide-scrollbar">
           {ALL_SUBJECT_OPTIONS.map((sub) => {
             const isActive = subject === sub;
             return (
@@ -325,76 +320,56 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
       </div>
 
       {/* 3. AI Diagnostic Primary Banner with Animated Radar Chart */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-900 rounded-3xl p-4 text-white shadow-md flex items-center justify-between gap-3">
-        <div className="space-y-2 flex-1 min-w-0">
-          <div className="inline-flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-full border border-white/15 text-[11px] font-bold text-amber-300 backdrop-blur-xs">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>开窍 AI 诊断报告 · {subject}</span>
-          </div>
-
-          <div className="space-y-0.5">
-            <div className="text-xs text-emerald-100 font-medium">综合击破度</div>
-            <div className="text-3xl font-black text-amber-300 tracking-tight drop-shadow-sm">
-              {stats.accuracy}<span className="text-base font-bold ml-0.5">%</span>
+      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-900 rounded-2xl p-3.5 text-white shadow-md space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="inline-flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-full border border-white/15 text-[10px] font-bold text-amber-300 backdrop-blur-xs">
+              <Sparkles className="w-3 h-3" />
+              <span>开窍诊断 · {subject}</span>
             </div>
+
+            <div className="mt-2 flex items-end gap-2">
+              <div className="text-3xl font-black text-amber-300 tracking-tight drop-shadow-sm">
+                {stats.accuracy}<span className="text-sm font-bold ml-0.5">%</span>
+              </div>
+              <span className="pb-1 text-[11px] font-medium text-emerald-100">综合正确率</span>
+            </div>
+
+            <p className="mt-1 text-[10px] text-emerald-100/90 font-medium">
+              {timeRange === '7days' ? '近 7 天' : '近 30 天'}学习表现
+            </p>
           </div>
 
-          <p className="text-[11px] text-emerald-100/90 font-medium leading-tight">
-            根据{timeRange === '7days' ? '近 7 天' : '近 30 天'} {stats.totalQuestions} 道有效答题题目综合计算归因
-          </p>
-        </div>
-
-        {/* Embedded Dynamic Radar Frame */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-1.5 border border-white/20 shrink-0 shadow-inner">
-          <RadarChartGraphic subject={subject} />
-        </div>
-      </div>
-
-      {/* 4. 3 Metric Cards matching HomeView design system */}
-      <div className="grid grid-cols-3 gap-2.5">
-        <div className="bg-white p-3 rounded-2xl card-shadow border border-slate-200/80 text-center">
-          <span className="text-[11px] text-slate-500 font-medium">答题总量</span>
-          <div className="mt-1 text-lg font-extrabold text-slate-900">
-            {stats.totalQuestions}<span className="text-xs text-slate-400 font-normal ml-0.5">题</span>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-1 border border-white/20 shrink-0 shadow-inner">
+            <RadarChartGraphic subject={subject} />
           </div>
         </div>
 
-        <div className="bg-white p-3 rounded-2xl card-shadow border border-slate-200/80 text-center">
-          <span className="text-[11px] text-slate-500 font-medium">正确率</span>
-          <div className="mt-1 text-lg font-extrabold text-emerald-600">
-            {stats.accuracy}<span className="text-xs text-slate-400 font-normal ml-0.5">%</span>
+        <div className="grid grid-cols-3 gap-1.5 border-t border-white/15 pt-2.5 text-center">
+          <div className="rounded-xl bg-white/10 px-1 py-1.5">
+            <div className="text-[10px] text-emerald-100">答题</div>
+            <div className="text-sm font-black">{stats.totalQuestions}<span className="ml-0.5 text-[9px] font-medium">题</span></div>
+          </div>
+          <div className="rounded-xl bg-white/10 px-1 py-1.5">
+            <div className="text-[10px] text-emerald-100">错题</div>
+            <div className="text-sm font-black text-amber-200">{stats.wrongCount}<span className="ml-0.5 text-[9px] font-medium">题</span></div>
+          </div>
+          <div className="rounded-xl bg-white/10 px-1 py-1.5">
+            <div className="text-[10px] text-emerald-100">知识覆盖</div>
+            <div className="text-sm font-black">{stats.coveredPoints}<span className="text-[9px] font-medium">/{stats.totalPoints}</span></div>
           </div>
         </div>
 
-        <div className="bg-white p-3 rounded-2xl card-shadow border border-slate-200/80 text-center">
-          <span className="text-[11px] text-slate-500 font-medium">知识覆盖</span>
-          <div className="mt-1 text-lg font-extrabold text-slate-900">
-            {stats.coveredPoints}<span className="text-xs text-slate-400 font-normal">/{stats.totalPoints}</span>
+        <div className="flex items-center gap-2">
+          <BookOpen className="h-3.5 w-3.5 shrink-0 text-emerald-200" />
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15">
+            <div
+              className="h-full rounded-full bg-amber-300 transition-all duration-500"
+              style={{ width: `${stats.coveragePercent}%` }}
+            />
           </div>
+          <span className="text-[10px] font-bold text-emerald-100">覆盖 {stats.coveragePercent}%</span>
         </div>
-      </div>
-
-      {/* PRD 13.6: Knowledge Coverage Metric */}
-      <div className="bg-white p-4 rounded-2xl card-shadow border border-slate-200/80 space-y-2.5">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-emerald-600" />
-            知识覆盖度
-          </h3>
-          <span className="text-xs font-bold text-emerald-700">
-            {stats.coveredPoints} / {stats.totalPoints} 知识点 ({stats.coveragePercent}%)
-          </span>
-        </div>
-
-        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-            style={{ width: `${stats.coveragePercent}%` }}
-          />
-        </div>
-        <p className="text-[10px] text-slate-400">
-          基于当前年级【{student.grade} {subject}】全量知识点大纲统计
-        </p>
       </div>
 
       {/* Weak Knowledge Points Section */}
@@ -533,4 +508,3 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
     </div>
   );
 };
-

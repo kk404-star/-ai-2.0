@@ -6,6 +6,7 @@ interface PhotoScanViewProps {
   records: CorrectionRecord[];
   onNavigateToDetail: (record: CorrectionRecord) => void;
   onNavigateToScreen: (screen: ScreenType) => void;
+  onNavigateToInstantLearning?: (record: CorrectionRecord) => void;
 }
 
 const SUBJECTS: SubjectType[] = ['数学', '物理', '化学', '生物', '英语', '语文', '历史', '地理', '政治'];
@@ -14,6 +15,7 @@ export const PhotoScanView: React.FC<PhotoScanViewProps> = ({
   records,
   onNavigateToDetail,
   onNavigateToScreen,
+  onNavigateToInstantLearning,
 }) => {
   const [photoMode, setPhotoMode] = useState<'single' | 'multi'>('single');
   const [selectedSubject, setSelectedSubject] = useState<SubjectType>('数学');
@@ -221,7 +223,10 @@ export const PhotoScanView: React.FC<PhotoScanViewProps> = ({
               {record.wrongCount > 0 && (
                 <div className="pt-2 border-t border-slate-100 flex justify-end">
                   <button
-                    onClick={() => onNavigateToScreen('instant_learning')}
+                    onClick={() => {
+                      if (onNavigateToInstantLearning) onNavigateToInstantLearning(record);
+                      else onNavigateToScreen('instant_learning');
+                    }}
                     className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-xs active:scale-95 transition-all"
                   >
                     <span>学习这道错题</span>
@@ -252,7 +257,6 @@ export const PhotoScanView: React.FC<PhotoScanViewProps> = ({
             </div>
 
             <p className="text-xs text-slate-500 leading-relaxed font-medium">
-              根据 PRD 规范，系统已整理识别出题目与手写回答。若识别有误，请在下方直接修改后提交批改。
             </p>
 
             <div className="space-y-3">
@@ -302,5 +306,3 @@ export const PhotoScanView: React.FC<PhotoScanViewProps> = ({
     </div>
   );
 };
-
-

@@ -16,7 +16,9 @@ export type GradeType = '初一' | '初二' | '初三' | '高一' | '高二' | '
 
 export type DifficultyLevel = '基础' | '提升' | '压轴';
 
-export type ErrorCategory = '概念没理解' | '计算错误' | '审题遗漏' | '知识点混淆' | '推理跳步';
+export const ERROR_CATEGORIES = ['概念没理解', '计算错误', '审题遗漏', '知识点混淆', '推理跳步'] as const;
+
+export type ErrorCategory = (typeof ERROR_CATEGORIES)[number];
 
 export type MasteryState = '未学' | '学习中' | '待验证' | '巩固中' | '待复习' | '已完成' | '稳定掌握';
 
@@ -84,6 +86,7 @@ export interface KnowledgeL3Point {
   code: string;
   title: string;
   boundQuestionCount: number;
+  practicedQuestionCount: number;
   masteryState: MasteryState;
   hasVerificationQuiz: boolean;
 }
@@ -197,6 +200,7 @@ export interface QuizQuestion {
   sampleStepSolution?: string[];
   sampleFinalAnswer?: string;
   aiHint: string;
+  practiceStatus?: '已练习' | '未练习';
 }
 
 export interface ChatMessage {
@@ -208,4 +212,3 @@ export interface ChatMessage {
   checkQuestion?: string;
   imageUrl?: string;
 }
-

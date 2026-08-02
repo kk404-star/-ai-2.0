@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   X, 
   RotateCw, 
@@ -10,12 +10,12 @@ import {
   Sparkles,
   Check
 } from 'lucide-react';
-import { CorrectionRecord, ScreenType } from '../types';
+import { CorrectionRecord, ErrorCategory, ERROR_CATEGORIES, ScreenType } from '../types';
 
 interface CorrectionDetailViewProps {
   record: CorrectionRecord;
   onNavigateToScreen: (screen: ScreenType) => void;
-  onAddToWrongQuestions?: (record: CorrectionRecord) => void;
+  onAddToWrongQuestions?: (record: CorrectionRecord, errorCategory: ErrorCategory) => void;
 }
 
 export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
@@ -26,6 +26,19 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
   const [showImageZoom, setShowImageZoom] = useState(false);
   const [isAddedToWrong, setIsAddedToWrong] = useState(false);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const [showErrorCausePicker, setShowErrorCausePicker] = useState(false);
+  const [selectedErrorCategory, setSelectedErrorCategory] = useState<ErrorCategory>(record.errorCategory);
+
+  useEffect(() => {
+    if (!showErrorCausePicker) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowErrorCausePicker(false);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showErrorCausePicker]);
 
   const handleReanalyze = () => {
     setIsReanalyzing(true);
@@ -36,8 +49,9 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
 
   const handleAddWrong = () => {
     setIsAddedToWrong(true);
+    setShowErrorCausePicker(false);
     if (onAddToWrongQuestions) {
-      onAddToWrongQuestions(record);
+      onAddToWrongQuestions(record, selectedErrorCategory);
     }
   };
 
@@ -176,9 +190,9 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
       </div>
 
       {/* Fixed Bottom Actions */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[420px] mx-auto bg-white/95 backdrop-blur-md p-3.5 border-t border-slate-200 z-40 flex gap-3 shadow-lg rounded-t-2xl">
+      <div className="mobile-fixed-footer flex gap-2.5">
         <button
-          onClick={handleAddWrong}
+          onClick={() => setShowErrorCausePicker(true)}
           disabled={isAddedToWrong}
           className={`flex-1 h-12 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
             isAddedToWrong
@@ -208,6 +222,73 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
         </button>
       </div>
 
+      {/* Error Cause Picker */}
+      {showErrorCausePicker && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="error-cause-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-900/45 backdrop-blur-[1px]"
+            onClick={() => setShowErrorCausePicker(false)}
+            aria-label="关闭错因选择"
+          />
+          <div className="relative flex max-h-[calc(100dvh-1.5rem-env(safe-area-inset-bottom))] w-full max-w-[366px] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl animate-fade-in">
+            <div className="mx-auto mb-4 mt-3 h-1 w-10 shrink-0 rounded-full bg-slate-200" />
+            <div className="flex items-start justify-between gap-4 px-5">
+              <div>
+                <h3 id="error-cause-title" className="text-base font-bold text-slate-900">选择错因</h3>
+                <p className="mt-1 text-xs leading-relaxed text-slate-500">请选择这道题的主要错因，加入后可按错因复习。</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowErrorCausePicker(false)}
+                className="-mr-1 rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                aria-label="关闭"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-4 grid min-h-0 grid-cols-2 gap-2 overflow-y-auto px-5 hide-scrollbar">
+              {ERROR_CATEGORIES.map((category) => {
+                const isSelected = selectedErrorCategory === category;
+                return (
+                  <button
+                    type="button"
+                    key={category}
+                    onClick={() => setSelectedErrorCategory(category)}
+                    className={`flex min-h-11 items-center justify-between rounded-xl border px-3 py-2.5 text-left text-xs font-bold transition-all active:scale-[0.98] last:col-span-2 ${
+                      isSelected
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50/40'
+                    }`}
+                    aria-pressed={isSelected}
+                  >
+                    <span>{category}</span>
+                    {isSelected && <Check className="h-4 w-4 shrink-0 text-emerald-600" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 border-t border-slate-100 p-4 pt-3">
+              <button
+                type="button"
+                onClick={handleAddWrong}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-bold text-white shadow-md transition-all hover:bg-emerald-700 active:scale-[0.98]"
+              >
+                <BookMarked className="h-4 w-4" />
+                确认加入错题本
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Full Image Zoom Modal */}
       {showImageZoom && (
         <div
@@ -230,4 +311,3 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
     </div>
   );
 };
-

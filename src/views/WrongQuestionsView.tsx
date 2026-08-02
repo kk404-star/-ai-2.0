@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Camera, ChevronDown, ChevronUp, CheckCircle2, RefreshCw, HelpCircle, FileText, XCircle, Sparkles } from 'lucide-react';
-import { WrongQuestion, ScreenType } from '../types';
+import { ERROR_CATEGORIES, WrongQuestion, ScreenType } from '../types';
 import { CustomDropdownSelect } from '../components/SubjectSelect';
 
 interface WrongQuestionsViewProps {
@@ -65,7 +65,7 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
         <CustomDropdownSelect
           value={errorFilter}
           onChange={(val) => setErrorFilter(val)}
-          options={['全部错因', '概念没理解', '计算错误', '审题遗漏', '知识点混淆']}
+          options={['全部错因', ...ERROR_CATEGORIES]}
           placeholder="全部错因"
         />
 
@@ -262,5 +262,4 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
     </div>
   );
 };
-
 

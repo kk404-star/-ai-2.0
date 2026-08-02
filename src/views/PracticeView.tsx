@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { 
   CheckCircle2, 
   XCircle,
@@ -17,24 +17,62 @@ import {
   LayoutGrid,
   FileCheck
 } from 'lucide-react';
-import { QuizQuestion, ScreenType, QuestionType } from '../types';
+import { QuizQuestion, ScreenType, QuestionType, WrongQuestion } from '../types';
 import { sampleQuestionsList } from '../data/initialData';
 
 interface PracticeViewProps {
   question: QuizQuestion;
   knowledgePointTitle?: string | null;
+  wrongQuestions?: WrongQuestion[];
+  questionBank?: QuizQuestion[];
   onNavigateToScreen: (screen: ScreenType) => void;
-  onCompleteQuiz?: () => void;
+  onCompleteQuiz?: (completedQuestionIds: string[]) => void;
 }
 
 export const PracticeView: React.FC<PracticeViewProps> = ({
   question: initialQuestion,
   knowledgePointTitle,
+  wrongQuestions = [],
+  questionBank = sampleQuestionsList,
   onNavigateToScreen,
   onCompleteQuiz,
 }) => {
+  const questions = useMemo<QuizQuestion[]>(() => {
+    if (!knowledgePointTitle) return questionBank;
+
+    const matchedWrongQuestions = wrongQuestions.filter((item) =>
+      (item.knowledgePoints?.length ? item.knowledgePoints : [item.topic]).includes(knowledgePointTitle)
+    );
+
+    if (matchedWrongQuestions.length === 0) return questionBank;
+
+    return matchedWrongQuestions.map((item, index) => {
+      const correctOptionKey = item.options
+        ? item.correctAnswer.match(/^([A-D])(?:[.\s、]|$)/)?.[1]
+        : undefined;
+
+      return {
+        id: `wrong-practice-${item.id}`,
+        questionNumber: index + 1,
+        totalQuestions: matchedWrongQuestions.length,
+        subject: item.subject,
+        difficulty: item.difficulty,
+        difficultyLabel: `${item.difficulty}错题`,
+        questionType: item.options ? '选择题' : '解答题',
+        knowledgePoint: knowledgePointTitle,
+        questionText: item.questionText,
+        options: item.options,
+        correctOptionKey,
+        sampleFinalAnswer: item.correctAnswer,
+        sampleStepSolution: item.steps,
+        aiHint: `这是你在【${knowledgePointTitle}】下的历史错题。先独立重做，再对照解析找出原错因。`,
+        practiceStatus: item.reviewStatus === '已掌握' ? '已练习' : '未练习',
+      };
+    });
+  }, [knowledgePointTitle, questionBank, wrongQuestions]);
+
   const [activeQuestionIndex, setActiveQuestionIndex] = useState<number>(0);
-  const currentQuestion = sampleQuestionsList[activeQuestionIndex] || initialQuestion;
+  const currentQuestion = questions[activeQuestionIndex] || initialQuestion;
 
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [fillAnswers, setFillAnswers] = useState<string>('');
@@ -54,7 +92,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   const currentType: QuestionType = currentQuestion.questionType || (currentQuestion.options ? '选择题' : '解答题');
 
   const handleNextQuestion = () => {
-    if (activeQuestionIndex < sampleQuestionsList.length - 1) {
+    if (activeQuestionIndex < questions.length - 1) {
       setActiveQuestionIndex((prev) => prev + 1);
       setIsSubmitted(false);
       setSelectedKey(null);
@@ -62,10 +100,15 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
       setEssayStepsInput('');
       setUploadedImages([]);
     } else {
-      if (onCompleteQuiz) onCompleteQuiz();
+      if (onCompleteQuiz) onCompleteQuiz(getCompletedQuestionIds());
       onNavigateToScreen('tab');
     }
   };
+
+  const getCompletedQuestionIds = () => Object.entries(answeredQuestions)
+    .filter(([, completed]) => completed)
+    .map(([index]) => questions[Number(index)]?.id)
+    .filter((id): id is string => Boolean(id));
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -132,9 +175,10 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
 
         {/* Question Selector Controls */}
         <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl overflow-x-auto no-scrollbar max-w-[60%] sm:max-w-[70%]">
-          {sampleQuestionsList.map((q, idx) => {
+          {questions.map((q, idx) => {
             const isCurrent = activeQuestionIndex === idx;
             const isAnswered = !!answeredQuestions[idx];
+            const wasPracticed = q.practiceStatus === '已练习';
 
             return (
               <button
@@ -145,9 +189,11 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
                     ? 'bg-emerald-600 text-white shadow-2xs scale-105'
                     : isAnswered
                     ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300/80'
+                    : wasPracticed
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
                     : 'bg-transparent text-slate-600 hover:bg-slate-200/60'
                 }`}
-                title={`第 ${idx + 1} 题 ${isAnswered ? '(已答)' : ''}`}
+                title={`第 ${idx + 1} 题 ${isAnswered || wasPracticed ? '(已练习)' : '(未练习)'}`}
               >
                 {idx + 1}
               </button>
@@ -425,13 +471,13 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
       )}
 
       {/* Bottom Action Footer */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[420px] mx-auto bg-white/95 backdrop-blur-md p-3.5 border-t border-slate-200 z-40 shadow-lg rounded-t-2xl">
+      <div className="mobile-fixed-footer">
         {isSubmitted ? (
           <button
             onClick={handleNextQuestion}
             className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-98 transition-all"
           >
-            <span>{activeQuestionIndex < sampleQuestionsList.length - 1 ? '下一题' : '完成本次练习'}</span>
+            <span>{activeQuestionIndex < questions.length - 1 ? '下一题' : '完成本次练习'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         ) : (
@@ -494,7 +540,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
                 <div>
                   <h3 className="text-base font-black text-slate-900">练习答题卡</h3>
                   <p className="text-[10px] text-slate-500 font-medium">
-                    共 {sampleQuestionsList.length} 题 · 已完成 {Object.keys(answeredQuestions).length} 题
+                    共 {questions.length} 题 · 已完成 {Object.keys(answeredQuestions).length} 题
                   </p>
                 </div>
               </div>
@@ -520,13 +566,13 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-slate-100 border border-slate-300" />
-                <span className="text-slate-700">未作答 ({sampleQuestionsList.length - Object.keys(answeredQuestions).length})</span>
+                <span className="text-slate-700">未作答 ({questions.length - Object.keys(answeredQuestions).length})</span>
               </div>
             </div>
 
             {/* Question Grid */}
             <div className="grid grid-cols-5 gap-2.5 py-1 max-h-64 overflow-y-auto p-1">
-              {sampleQuestionsList.map((q, idx) => {
+              {questions.map((q, idx) => {
                 const isCurrent = activeQuestionIndex === idx;
                 const isAnswered = !!answeredQuestions[idx];
 
@@ -565,7 +611,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
                 type="button"
                 onClick={() => {
                   setShowAnswerSheet(false);
-                  if (onCompleteQuiz) onCompleteQuiz();
+                  if (onCompleteQuiz) onCompleteQuiz(getCompletedQuestionIds());
                   onNavigateToScreen('tab');
                 }}
                 className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-xs transition-all active:scale-95"
@@ -579,4 +625,3 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
     </div>
   );
 };
-

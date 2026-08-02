@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { 
   Camera, 
@@ -13,7 +13,6 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { StudentProfile, TaskItem, ScreenType, SubjectType, WrongQuestion } from '../types';
-import { sampleWeakKnowledgeItems } from '../data/initialData';
 import { CheckInCalendarModal } from '../components/CheckInCalendarModal';
 import { SubjectSelect } from '../components/SubjectSelect';
 
@@ -43,6 +42,30 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const robotAvatarRef = useRef<HTMLDivElement>(null);
   const robotImgRef = useRef<HTMLDivElement>(null);
+
+  const weakKnowledgeItems = useMemo(() => {
+    const knowledgeStats = new Map<string, { wrongCount: number; unreviewedCount: number }>();
+
+    wrongQuestions
+      .filter((question) => question.subject === student.currentSubject)
+      .forEach((question) => {
+        const knowledgePoints = question.knowledgePoints?.length
+          ? [...new Set(question.knowledgePoints)]
+          : [question.topic];
+
+        knowledgePoints.forEach((title) => {
+          const current = knowledgeStats.get(title) || { wrongCount: 0, unreviewedCount: 0 };
+          current.wrongCount += 1;
+          if (question.reviewStatus === '未复习') current.unreviewedCount += 1;
+          knowledgeStats.set(title, current);
+        });
+      });
+
+    return Array.from(knowledgeStats.entries())
+      .map(([title, stats]) => ({ title, ...stats }))
+      .sort((a, b) => b.unreviewedCount - a.unreviewedCount || b.wrongCount - a.wrongCount)
+      .slice(0, 3);
+  }, [student.currentSubject, wrongQuestions]);
 
   useEffect(() => {
     // GSAP Floating & Entrance Animation for Robot Avatar
@@ -228,7 +251,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
       {/* AI Smart Quiz Card (AI 智能抽题) */}
       <div 
-        onClick={() => onNavigateToScreen('practice')}
+        onClick={() => {
+          onSelectKnowledgePointForPractice?.('');
+          onNavigateToScreen('practice');
+        }}
         className="bg-emerald-50/90 p-3.5 rounded-2xl border border-emerald-200/60 shadow-2xs cursor-pointer hover:border-emerald-300 transition-all active:scale-[0.99] flex items-center justify-between gap-3 group"
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -255,6 +281,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            onSelectKnowledgePointForPractice?.('');
             onNavigateToScreen('practice');
           }}
           className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-2 rounded-xl transition-all active:scale-95 shrink-0 flex items-center gap-0.5 shadow-xs"
@@ -265,7 +292,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </div>
 
       {/* Weak Knowledge Points Section (薄弱知识点关注榜) */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-2xs space-y-3">
+      <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-2xs space-y-2.5">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 shrink-0">
             <Lightbulb className="w-4 h-4 text-amber-500 fill-amber-400" />
@@ -279,23 +306,26 @@ export const HomeView: React.FC<HomeViewProps> = ({
           />
         </div>
 
-        <div className="space-y-2.5">
-          {sampleWeakKnowledgeItems.map((item) => (
+        <div className="space-y-2">
+          {weakKnowledgeItems.map((item) => (
             <div
-              key={item.id}
-              className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/60 space-y-2.5 hover:border-emerald-300 transition-all"
+              key={item.title}
+              className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/60 space-y-1.5 hover:border-emerald-300 transition-all"
             >
               <div className="flex justify-between items-center gap-2">
                 <span className="font-bold text-slate-900 text-xs truncate">{item.title}</span>
                 <span className="text-[10px] font-extrabold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full shrink-0 border border-rose-100">
-                  未复习 {item.unreviewedCount} 题
+                  关联错题 {item.wrongCount} 题
                 </span>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-200/40">
+              <div className="flex items-center justify-end gap-1.5">
                 <button
-                  onClick={() => onNavigateToScreen('knowledge_study')}
+                  onClick={() => {
+                    onSelectKnowledgePointForPractice?.(item.title);
+                    onNavigateToScreen('knowledge_study');
+                  }}
                   className="px-2.5 py-1 bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50 text-[11px] font-bold rounded-lg transition-all active:scale-95 flex items-center gap-1 shadow-2xs"
                 >
                   <Bot className="w-3.5 h-3.5 text-emerald-600" />
@@ -317,13 +347,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
           ))}
+
+          {weakKnowledgeItems.length === 0 && (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+              <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-500" />
+              <p className="mt-2 text-xs font-bold text-slate-700">暂无关联错题</p>
+              <p className="mt-1 text-[11px] text-slate-400">拍照批改或加入错题本后，会自动按知识点统计</p>
+            </div>
+          )}
         </div>
 
         {/* View All Button */}
-        <div className="text-center pt-1">
+        <div className="text-center">
           <button 
             onClick={() => onNavigateToScreen('knowledge_study')}
-            className="text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors inline-flex items-center gap-1"
+            className="text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors inline-flex items-center gap-1 py-0.5"
           >
             <span>查看全部薄弱知识点</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -340,4 +378,3 @@ export const HomeView: React.FC<HomeViewProps> = ({
     </div>
   );
 };
-

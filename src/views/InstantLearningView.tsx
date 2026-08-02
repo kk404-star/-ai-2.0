@@ -283,7 +283,7 @@ export const InstantLearningView: React.FC<InstantLearningViewProps> = ({
       )}
 
       {/* Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[420px] mx-auto bg-white/95 backdrop-blur-md p-3.5 border-t border-slate-200 z-40 flex gap-3 shadow-lg rounded-t-2xl">
+      <div className="mobile-fixed-footer flex gap-2.5">
         <button
           onClick={onReturnHome}
           className="flex-1 h-12 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-bold flex items-center justify-center gap-1 transition-all active:scale-95"

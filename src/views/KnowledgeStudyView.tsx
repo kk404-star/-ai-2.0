@@ -215,7 +215,7 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
       </div>
 
       {/* Fixed Bottom Input Bar & Primary CTA */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[420px] mx-auto bg-white/95 backdrop-blur-md p-3.5 border-t border-slate-200 z-40 space-y-2 shadow-lg rounded-t-2xl">
+      <div className="mobile-fixed-footer space-y-2">
         <div className="flex items-center gap-2">
           <input
             type="text"
