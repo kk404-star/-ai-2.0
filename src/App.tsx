@@ -32,7 +32,6 @@ import {
   TabType, 
   ScreenType, 
   SubjectType, 
-  GradeType, 
   StudentProfile, 
   CorrectionRecord, 
   WrongQuestion,
@@ -260,11 +259,6 @@ export default function App() {
     }
   };
 
-  // Grade Change
-  const handleGradeChange = (newGrade: GradeType) => {
-    setStudent((prev) => ({ ...prev, grade: newGrade }));
-  };
-
   // Subject Change
   const handleSubjectChange = (newSubject: SubjectType) => {
     setStudent((prev) => ({ ...prev, currentSubject: newSubject }));
@@ -479,9 +473,7 @@ export default function App() {
       <Header
         currentScreen={activeScreen}
         screenTitle={getScreenTitle()}
-        student={student}
         onBack={() => setActiveScreen('tab')}
-        onGradeChange={handleGradeChange}
         onOpenReport={() => setActiveScreen('diagnostic_report')}
       />
 

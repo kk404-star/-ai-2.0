@@ -1,28 +1,20 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, Sparkles } from 'lucide-react';
-import { ScreenType, GradeType, StudentProfile } from '../types';
+import React from 'react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ScreenType } from '../types';
 
 interface HeaderProps {
   currentScreen: ScreenType;
   screenTitle?: string;
-  student: StudentProfile;
   onBack?: () => void;
-  onGradeChange?: (grade: GradeType) => void;
   onOpenReport?: () => void;
 }
-
-const GRADES: GradeType[] = ['初一', '初二', '初三', '高一', '高二', '高三'];
 
 export const Header: React.FC<HeaderProps> = ({
   currentScreen,
   screenTitle,
-  student,
   onBack,
-  onGradeChange,
   onOpenReport,
 }) => {
-  const [showGradeModal, setShowGradeModal] = useState(false);
-
   const isTabScreen = currentScreen === 'tab';
 
   return (
@@ -43,45 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
         </h1>
       </div>
 
-      {/* Right side: Grade selector, Diagnostic button, Avatar */}
+      {/* Right side: Diagnostic button, Avatar */}
       <div className="flex items-center gap-2">
-        {isTabScreen && (
-          <div className="relative">
-            <button
-              onClick={() => setShowGradeModal(!showGradeModal)}
-              className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-full text-xs font-semibold text-slate-700 transition-colors"
-            >
-              <span>{student.grade}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-            </button>
-
-            {/* Grade Selection Modal/Dropdown */}
-            {showGradeModal && (
-              <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50">
-                <div className="px-3 py-1 text-[11px] font-bold text-slate-400 border-b border-slate-100">
-                  切换年级
-                </div>
-                {GRADES.map((g) => (
-                  <button
-                    key={g}
-                    onClick={() => {
-                      onGradeChange?.(g);
-                      setShowGradeModal(false);
-                    }}
-                    className={`w-full text-left px-3 py-1.5 text-xs font-medium transition-colors ${
-                      student.grade === g
-                        ? 'bg-emerald-50 text-emerald-700 font-bold'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    {g}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Diagnostic Button */}
         {isTabScreen && onOpenReport && (
           <button
@@ -111,4 +66,3 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
-

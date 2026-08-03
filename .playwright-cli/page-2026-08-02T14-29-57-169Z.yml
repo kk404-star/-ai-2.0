@@ -1,0 +1,74 @@
+- generic [ref=e21]:
+  - banner [ref=e22]:
+    - heading "开窍 AI 学伴" [level=1] [ref=e801]
+    - generic [ref=e25]:
+      - button "初二" [ref=e803]
+      - button "诊断" [ref=e807]
+  - main [ref=e45]:
+    - generic [ref=e812]:
+      - generic [ref=e813] [cursor=pointer]:
+        - generic [ref=e814]:
+          - generic [ref=e815]:
+            - heading "你好，李同学 👋" [level=2] [ref=e816]:
+              - generic [ref=e817]: 你好，李同学
+              - generic [ref=e818]: 👋
+            - paragraph [ref=e819]: 开窍 AI 智能学伴 · 数学
+          - paragraph [ref=e821]: 已经学习第 23 天！
+          - button "打卡日历" [ref=e822]
+        - generic: 开窍学伴
+      - generic [ref=e828]:
+        - generic [ref=e829]:
+          - generic [ref=e830]: 今日任务
+          - generic [ref=e835]: 6/8
+          - generic [ref=e836]: 完成 75%
+        - generic [ref=e837]:
+          - generic [ref=e838]: 学习时间
+          - generic [ref=e843]: 68分
+          - generic [ref=e844]: 较昨日 +12 分
+        - generic [ref=e845]:
+          - generic [ref=e846]: 正确率
+          - generic [ref=e852]: 85%
+          - generic [ref=e853]: 较昨日 +6%
+      - generic [ref=e854] [cursor=pointer]:
+        - generic [ref=e860]:
+          - generic [ref=e861]:
+            - heading "AI 智能抽题" [level=3] [ref=e862]
+            - generic [ref=e863]: 个性推荐
+          - paragraph [ref=e864]: 基于你的掌握度，自动生成 5 题随堂测验
+        - button "立即开始" [ref=e865]
+      - generic [ref=e869]:
+        - generic [ref=e870]:
+          - heading "薄弱知识点关注榜" [level=3] [ref=e871]
+          - button "数学" [ref=e876]
+        - generic [ref=e882]:
+          - generic [ref=e883]:
+            - generic [ref=e884]:
+              - generic [ref=e885]: 二次函数的图像与顶点坐标
+              - generic [ref=e886]: 未复习 2 题
+            - generic [ref=e887]:
+              - button "学习" [ref=e888]
+              - button "练习" [ref=e893]
+          - generic [ref=e897]:
+            - generic [ref=e898]:
+              - generic [ref=e899]: 切线点斜式与导数几何意义
+              - generic [ref=e900]: 未复习 1 题
+            - generic [ref=e901]:
+              - button "学习" [ref=e902]
+              - button "练习" [ref=e907]
+          - generic [ref=e911]:
+            - generic [ref=e912]:
+              - generic [ref=e913]: 一元二次方程根与系数的关系
+              - generic [ref=e914]: 未复习 0 题
+            - generic [ref=e915]:
+              - button "学习" [ref=e916]
+              - button "练习" [ref=e921]
+        - button "查看全部薄弱知识点" [ref=e926]
+  - navigation [ref=e930]:
+    - generic [ref=e931]:
+      - button "首页" [ref=e932]
+      - button "学习" [ref=e938]
+      - button "拍照批改" [ref=e943]
+      - button "3 错题本" [ref=e949]:
+        - generic [ref=e950]: "3"
+        - generic [ref=e956]: 错题本
+      - button "我的" [ref=e957]

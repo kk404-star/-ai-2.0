@@ -1,0 +1,82 @@
+- generic [ref=e21]:
+  - banner [ref=e22]:
+    - heading "错题本" [level=1] [ref=e622]
+    - generic [ref=e25]:
+      - button "初二" [ref=e462]
+      - button "诊断" [ref=e466]
+  - main [ref=e45]:
+    - generic [ref=e623]:
+      - generic [ref=e624]:
+        - button "全部" [ref=e625]
+        - button "未复习" [ref=e626]
+        - button "复习中" [ref=e627]
+        - button "已掌握" [ref=e628]
+      - generic [ref=e629]:
+        - button "全部学科" [ref=e631]
+        - button "全部错因" [ref=e636]
+        - button "全部难度" [ref=e641]
+      - generic [ref=e645]:
+        - generic [ref=e646]:
+          - generic [ref=e647] [cursor=pointer]:
+            - generic [ref=e648]:
+              - generic [ref=e649]:
+                - generic [ref=e650]: 数学
+                - generic [ref=e651]: 概念没理解
+              - generic [ref=e652]: 05-20
+            - paragraph [ref=e656]: 已知二次函数 y = ax² + bx + c 的图像如图所示，则一次函数 y = ax + b 与反比例函数 y = c/x 的位置关系是（ ）
+          - generic [ref=e657]:
+            - generic [ref=e658]:
+              - generic [ref=e659]: 题目选项：
+              - generic [ref=e660]:
+                - generic [ref=e661]:
+                  - generic [ref=e662]: A
+                  - generic [ref=e663]: y = ax + b 与 y = c/x 相交于一、三象限
+                - generic [ref=e664]:
+                  - generic [ref=e665]: B
+                  - generic [ref=e666]: y = ax + b 与 y = c/x 相交于二、四象限
+                - generic [ref=e667]:
+                  - generic [ref=e668]: C
+                  - generic [ref=e669]: y = ax + b 过一、二、四象限
+                - generic [ref=e670]:
+                  - generic [ref=e671]: D
+                  - generic [ref=e672]: 反比例函数图像在第二、四象限
+            - generic [ref=e673]:
+              - generic [ref=e674]:
+                - generic [ref=e675]: AI 错因点拨与解题思路
+                - generic [ref=e680]: AI 智能诊断
+              - generic [ref=e681]:
+                - paragraph [ref=e682]: 1. 根据抛物线开口方向确定 a 的正负符号；
+                - paragraph [ref=e683]: 2. 根据对称轴位置 x = -b/(2a) 判断 b 的正负号；
+                - paragraph [ref=e684]: 3. 根据与 y 轴交点确定 c 的正负号。
+            - generic [ref=e686]:
+              - button "错题强化" [ref=e687]
+              - button "复练此题" [ref=e691]
+        - generic [ref=e698] [cursor=pointer]:
+          - generic [ref=e699]:
+            - generic [ref=e700]:
+              - generic [ref=e701]: 物理
+              - generic [ref=e702]: 计算错误
+            - generic [ref=e703]: 05-19
+          - paragraph [ref=e707]: 如图所示，木块在水平面上受到两个力的作用，已知 F₁ = 3N, F₂ = 5N, 木块处于静止状态，受到的摩擦力大小与方向为（ ）
+          - generic [ref=e708]:
+            - generic [ref=e709]: 考点：静摩擦力、二力平衡 ▾
+            - generic [ref=e710]: 提升题
+        - generic [ref=e712] [cursor=pointer]:
+          - generic [ref=e713]:
+            - generic [ref=e714]:
+              - generic [ref=e715]: 化学
+              - generic [ref=e716]: 审题遗漏
+            - generic [ref=e717]: 05-18
+          - paragraph [ref=e721]: 下列反应中，属于置换反应的是（ ）
+          - generic [ref=e722]:
+            - generic [ref=e723]: 考点：基本反应类型、置换反应 ▾
+            - generic [ref=e724]: 基础题
+  - navigation [ref=e589]:
+    - generic [ref=e590]:
+      - button "首页" [ref=e591]
+      - button "学习" [ref=e597]
+      - button "拍照批改" [ref=e602]
+      - button "3 错题本" [active] [ref=e608]:
+        - generic [ref=e609]: "3"
+        - generic [ref=e615]: 错题本
+      - button "我的" [ref=e616]

@@ -1,0 +1,139 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]: 开窍 AI 学伴 · 移动端视图
+    - button "手机视图" [ref=e7]
+    - button "全屏适应" [ref=e10]
+  - generic [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15]: 09:41
+      - generic [ref=e17]: 5G
+    - generic [ref=e21]:
+      - banner [ref=e22]:
+        - generic [ref=e23]:
+          - button [ref=e183]
+          - heading "学习诊断报告" [level=1] [ref=e186]
+      - main [ref=e45]:
+        - generic [ref=e187]:
+          - generic [ref=e188]:
+            - heading "李同学 的学习诊断" [level=2] [ref=e194]
+            - generic [ref=e195]:
+              - button "近7天" [ref=e196]
+              - button "近30天" [ref=e197]
+          - generic [ref=e199]:
+            - button "全科" [ref=e200]
+            - button "数学" [ref=e201]
+            - button "物理" [ref=e202]
+            - button "化学" [ref=e203]
+            - button "生物" [ref=e204]
+            - button "英语" [ref=e205]
+            - button "语文" [ref=e206]
+            - button "历史" [ref=e207]
+            - button "地理" [ref=e208]
+            - button "政治" [ref=e209]
+          - generic [ref=e210]:
+            - generic [ref=e211]:
+              - generic [ref=e212]:
+                - generic [ref=e213]: 开窍诊断 · 全科
+                - generic [ref=e218]:
+                  - generic [ref=e219]: 73.8%
+                  - generic [ref=e220]: 综合正确率
+                - paragraph [ref=e221]: 近 7 天学习表现
+              - img [ref=e224]:
+                - generic [ref=e236]: 基础
+                - generic [ref=e239]: 解题
+                - generic [ref=e242]: 思维
+                - generic [ref=e245]: 应用
+                - generic [ref=e248]: 提速
+            - generic [ref=e251]:
+              - generic [ref=e252]:
+                - generic [ref=e253]: 答题
+                - generic [ref=e254]: 42题
+              - generic [ref=e255]:
+                - generic [ref=e256]: 错题
+                - generic [ref=e257]: 11题
+              - generic [ref=e258]:
+                - generic [ref=e259]: 知识覆盖
+                - generic [ref=e260]:
+                  - text: "18"
+                  - generic [ref=e261]: /45
+            - generic [ref=e262]: 覆盖 40%
+          - generic [ref=e268]:
+            - generic [ref=e269]:
+              - heading "薄弱知识点清单" [level=3] [ref=e270]
+              - generic [ref=e273]: 需优先突破
+            - generic [ref=e274]:
+              - generic [ref=e275]:
+                - generic [ref=e276]:
+                  - heading "二次函数顶点与对称轴公式" [level=4] [ref=e277]
+                  - button "重做错题" [ref=e278]
+                - generic [ref=e279]:
+                  - generic [ref=e280]:
+                    - text: 题量：
+                    - generic [ref=e281]: 12 题
+                  - generic [ref=e282]:
+                    - text: 正确率：
+                    - generic [ref=e283]: 41.6%
+                  - generic [ref=e284]: 状态：应用不足
+              - generic [ref=e285]:
+                - generic [ref=e286]:
+                  - heading "去括号与系数符号分配律" [level=4] [ref=e287]
+                  - button "复习概念" [ref=e288]
+                - generic [ref=e289]:
+                  - generic [ref=e290]:
+                    - text: 题量：
+                    - generic [ref=e291]: 8 题
+                  - generic [ref=e292]:
+                    - text: 正确率：
+                    - generic [ref=e293]: 50%
+                  - generic [ref=e294]: 状态：概念不足
+              - generic [ref=e295]:
+                - generic [ref=e296]:
+                  - heading "切线方程与导数几何意义" [level=4] [ref=e297]
+                  - button "加强应用" [ref=e298]
+                - generic [ref=e299]:
+                  - generic [ref=e300]:
+                    - text: 题量：
+                    - generic [ref=e301]: 6 题
+                  - generic [ref=e302]:
+                    - text: 正确率：
+                    - generic [ref=e303]: 50%
+                  - generic [ref=e304]: 状态：需复习
+          - generic [ref=e305]:
+            - heading "错因分布统计" [level=3] [ref=e306]
+            - generic [ref=e310]:
+              - generic [ref=e312]:
+                - generic [ref=e313]: 计算错误 (5 次)
+                - generic [ref=e314]: 45.5%
+              - generic [ref=e318]:
+                - generic [ref=e319]: 概念没理解 (3 次)
+                - generic [ref=e320]: 27.3%
+              - generic [ref=e324]:
+                - generic [ref=e325]: 审题遗漏 (2 次)
+                - generic [ref=e326]: 18.2%
+              - generic [ref=e330]:
+                - generic [ref=e331]: 知识点混淆 (1 次)
+                - generic [ref=e332]: 9%
+              - generic [ref=e336]:
+                - generic [ref=e337]: 推理跳步 (0 次)
+                - generic [ref=e338]: 0%
+          - generic [ref=e340]:
+            - generic [ref=e341]: AI 诊断总结
+            - paragraph [ref=e346]: 根据近7天共 42 道有效答题记录：你对【全科】的知识点覆盖度为 40%。主要的失分归因集中在【计算错误】(45.5%) 与 【概念没理解】(27.3%)。特别在【二次函数顶点与对称轴公式】相关题目中正确率较低 (41.6%)。
+          - generic [ref=e347]:
+            - heading "后续推荐学习" [level=3] [ref=e348]
+            - generic [ref=e352]:
+              - generic [ref=e353]:
+                - generic [ref=e354]:
+                  - text: 1. 复习最新错题
+                  - paragraph [ref=e355]: 针对近期错题本中的去括号计算失误进行强化
+                - button "错题强化" [ref=e356]
+              - generic [ref=e359]:
+                - generic [ref=e360]:
+                  - text: 2. 补学概念薄弱
+                  - paragraph [ref=e361]: 重新学习【二次函数顶点与对称轴公式】
+                - button "概念补学" [ref=e362]
+              - generic [ref=e365]:
+                - generic [ref=e366]:
+                  - text: 3. 专项题目巩固
+                  - paragraph [ref=e367]: 前往题库进行二次函数精选题练习
+                - button "精选练习" [ref=e368]

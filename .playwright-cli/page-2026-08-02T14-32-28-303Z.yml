@@ -1,0 +1,76 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]: 开窍 AI 学伴 · 移动端视图
+    - button "手机视图" [ref=e7]
+    - button "全屏适应" [ref=e10]
+  - generic [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15]: 09:41
+      - generic [ref=e17]: 5G
+    - generic [ref=e21]:
+      - banner [ref=e22]:
+        - heading "开窍 AI 学伴" [level=1] [ref=e24]
+        - generic [ref=e25]:
+          - button "初二" [ref=e27]
+          - button "诊断" [ref=e31]
+      - main [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e47] [cursor=pointer]:
+            - generic [ref=e48]:
+              - generic [ref=e49]:
+                - heading "你好，李同学 👋" [level=2] [ref=e50]:
+                  - generic [ref=e51]: 你好，李同学
+                  - generic [ref=e52]: 👋
+                - paragraph [ref=e53]: 开窍 AI 智能学伴 · 数学
+              - paragraph [ref=e55]: 已经学习第 23 天！
+              - button "打卡日历" [ref=e56]
+            - generic: 开窍学伴
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - generic [ref=e64]: 今日任务
+              - generic [ref=e69]: 6/8
+              - generic [ref=e70]: 完成 75%
+            - generic [ref=e71]:
+              - generic [ref=e72]: 学习时间
+              - generic [ref=e77]: 68分
+              - generic [ref=e78]: 较昨日 +12 分
+            - generic [ref=e79]:
+              - generic [ref=e80]: 正确率
+              - generic [ref=e86]: 85%
+              - generic [ref=e87]: 较昨日 +6%
+          - generic [ref=e88] [cursor=pointer]:
+            - generic [ref=e94]:
+              - generic [ref=e95]:
+                - heading "AI 智能抽题" [level=3] [ref=e96]
+                - generic [ref=e97]: 个性推荐
+              - paragraph [ref=e98]: 基于你的掌握度，自动生成随堂测验
+            - button "立即开始" [ref=e99]
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - heading "薄弱知识点关注榜" [level=3] [ref=e105]
+              - button "数学" [ref=e110]
+            - generic [ref=e116]:
+              - generic [ref=e117]:
+                - generic [ref=e118]:
+                  - generic [ref=e119]: 二次函数图像
+                  - generic [ref=e120]: 关联错题 5 题
+                - generic [ref=e121]:
+                  - button "学习" [ref=e122]
+                  - button "练习" [ref=e127]
+              - generic [ref=e131]:
+                - generic [ref=e132]:
+                  - generic [ref=e133]: 函数系数判断
+                  - generic [ref=e134]: 关联错题 2 题
+                - generic [ref=e135]:
+                  - button "学习" [ref=e136]
+                  - button "练习" [ref=e141]
+            - button "查看全部薄弱知识点" [ref=e146]
+      - navigation [ref=e150]:
+        - generic [ref=e151]:
+          - button "首页" [ref=e152]
+          - button "学习" [ref=e158]
+          - button "拍照批改" [ref=e163]
+          - button "3 错题本" [ref=e169]:
+            - generic [ref=e170]: "3"
+            - generic [ref=e176]: 错题本
+          - button "我的" [ref=e177]

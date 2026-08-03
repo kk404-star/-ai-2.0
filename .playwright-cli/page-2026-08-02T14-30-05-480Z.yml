@@ -1,0 +1,61 @@
+- generic [ref=e21]:
+  - banner [ref=e22]:
+    - generic [ref=e23]:
+      - button [ref=e963]
+      - heading "拍照批改" [level=1] [ref=e966]
+  - main [ref=e45]:
+    - generic [ref=e967]:
+      - generic [ref=e968]:
+        - generic [ref=e969]:
+          - generic [ref=e970]: 选择题目学科（必选）：
+          - generic [ref=e971]: 已选：数学
+        - generic [ref=e972]:
+          - button "数学" [ref=e973]
+          - button "物理" [ref=e974]
+          - button "化学" [ref=e975]
+          - button "生物" [ref=e976]
+          - button "英语" [ref=e977]
+          - button "语文" [ref=e978]
+          - button "历史" [ref=e979]
+          - button "地理" [ref=e980]
+          - button "政治" [ref=e981]
+      - generic [ref=e982]:
+        - button "一道题 (大题/微小问)" [ref=e983]
+        - button "多道题 (整页练习)" [ref=e984]
+      - generic [ref=e985]:
+        - button [ref=e986]
+        - generic [ref=e990]:
+          - heading "点击拍照或上传图片" [level=3] [ref=e991]
+          - paragraph [ref=e992]: 模式：一道完整大题
+        - button "从相册选择" [ref=e994]
+      - generic [ref=e999]:
+        - generic [ref=e1000]:
+          - heading "历史批改记录" [level=3] [ref=e1001]
+          - generic [ref=e1002]: 全部 3 篇 ▾
+        - generic [ref=e1003]:
+          - generic [ref=e1004]:
+            - generic [ref=e1005] [cursor=pointer]:
+              - img "二次函数综合题" [ref=e1006]
+              - generic [ref=e1007]:
+                - heading "二次函数综合题" [level=4] [ref=e1008]
+                - paragraph [ref=e1009]: 05-20 14:30 · 数学
+                - generic [ref=e1011]:
+                  - text: 2 错
+                  - generic [ref=e1014]: 1 对
+            - button "学习变式" [ref=e1018]
+          - generic [ref=e1022]:
+            - generic [ref=e1023] [cursor=pointer]:
+              - img "力学计算题" [ref=e1024]
+              - generic [ref=e1025]:
+                - heading "力学计算题" [level=4] [ref=e1026]
+                - paragraph [ref=e1027]: 05-20 13:15 · 物理
+                - generic [ref=e1029]:
+                  - text: 1 错
+                  - generic [ref=e1032]: 2 对
+            - button "学习变式" [ref=e1036]
+          - generic [ref=e1041] [cursor=pointer]:
+            - img "化学方程式配平" [ref=e1042]
+            - generic [ref=e1043]:
+              - heading "化学方程式配平" [level=4] [ref=e1044]
+              - paragraph [ref=e1045]: 05-19 20:45 · 化学
+              - generic [ref=e1046]: 全对

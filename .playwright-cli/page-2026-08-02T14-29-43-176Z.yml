@@ -1,0 +1,58 @@
+- generic [ref=e21]:
+  - banner [ref=e22]:
+    - generic [ref=e23]:
+      - button [ref=e725]
+      - heading "错题针对性学习" [level=1] [ref=e728]
+  - main [ref=e45]:
+    - generic [ref=e729]:
+      - generic [ref=e730]:
+        - button "返回错题本" [ref=e731]
+        - generic [ref=e735]: AI 错因强化闭环
+      - generic [ref=e739]:
+        - generic [ref=e740]:
+          - generic [ref=e741]:
+            - generic [ref=e742]: 数学
+            - generic [ref=e743]: 考点：二次函数图像、函数系数判断
+          - generic [ref=e744]: 原错因：概念没理解
+        - paragraph [ref=e745]: 💡 AI 强化策略：先完成同类题巩固，再通过变式拓展验证，彻底消除“概念没理解”漏洞。
+      - generic [ref=e746]:
+        - generic [ref=e747]:
+          - heading "1. 原题重做 / 同类强化练习" [level=3] [ref=e748]
+          - generic [ref=e753]: 基础巩固
+        - paragraph [ref=e754]: 已知方程 3(x - 2) - 2(2x - 5) = 4，求未知数 x 的值（ ）
+        - generic [ref=e755]:
+          - button "A x = 2" [ref=e756]:
+            - generic [ref=e757]: A
+            - generic [ref=e758]: x = 2
+          - button "B x = 4" [ref=e759]:
+            - generic [ref=e760]: B
+            - generic [ref=e761]: x = 4
+          - button "C x = -2" [ref=e762]:
+            - generic [ref=e763]: C
+            - generic [ref=e764]: x = -2
+          - button "D x = 0" [ref=e765]:
+            - generic [ref=e766]: D
+            - generic [ref=e767]: x = 0
+        - button "提交同类练习" [disabled] [ref=e768]
+      - generic [ref=e769]:
+        - generic [ref=e770]:
+          - heading "2. 举一反三 (变式提高)" [level=3] [ref=e771]
+          - generic [ref=e776]: 变式拓展
+        - paragraph [ref=e777]: 若二次函数 g(x) = (a - 1)x² - 4x + 3 图像开口向下，求参数 a 的取值范围（ ）
+        - generic [ref=e778]:
+          - button "A a > 1" [ref=e779]:
+            - generic [ref=e780]: A
+            - generic [ref=e781]: a > 1
+          - button "B a < 1" [ref=e782]:
+            - generic [ref=e783]: B
+            - generic [ref=e784]: a < 1
+          - button "C a = 1" [ref=e785]:
+            - generic [ref=e786]: C
+            - generic [ref=e787]: a = 1
+          - button "D a ≤ 1" [ref=e788]:
+            - generic [ref=e789]: D
+            - generic [ref=e790]: a ≤ 1
+        - button "提交变式练习" [disabled] [ref=e791]
+      - generic [ref=e792]:
+        - button "返回首页" [ref=e793]
+        - button "前往真题练习" [ref=e797]

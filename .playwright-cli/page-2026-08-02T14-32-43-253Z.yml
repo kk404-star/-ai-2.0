@@ -1,0 +1,44 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]: 开窍 AI 学伴 · 移动端视图
+    - button "手机视图" [ref=e7]
+    - button "全屏适应" [ref=e10]
+  - generic [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15]: 09:41
+      - generic [ref=e17]: 5G
+    - generic [ref=e21]:
+      - banner [ref=e22]:
+        - generic [ref=e23]:
+          - button [ref=e183]
+          - heading "考点真题练习" [level=1] [ref=e234]
+      - main [ref=e45]:
+        - generic [ref=e235]:
+          - generic [ref=e236]:
+            - button "退出" [ref=e237]
+            - button "1" [ref=e241]
+            - generic [ref=e242]: 12:45
+          - generic [ref=e246]:
+            - generic [ref=e247]: 绑定考点：二次函数图像
+            - generic [ref=e250]: 精准匹配真题
+          - generic [ref=e251]:
+            - generic [ref=e252]:
+              - generic [ref=e253]:
+                - generic [ref=e254]: 选择题
+                - generic [ref=e255]: 基础错题
+              - generic [ref=e256]: 二次函数图像
+            - paragraph [ref=e257]: 已知二次函数 y = ax² + bx + c 的图像如图所示，则一次函数 y = ax + b 与反比例函数 y = c/x 的位置关系是（ ）
+          - generic [ref=e259]:
+            - button "A y = ax + b 与 y = c/x 相交于一、三象限" [ref=e260]:
+              - generic [ref=e261]: A
+              - paragraph [ref=e262]: y = ax + b 与 y = c/x 相交于一、三象限
+            - button "B y = ax + b 与 y = c/x 相交于二、四象限" [ref=e263]:
+              - generic [ref=e264]: B
+              - paragraph [ref=e265]: y = ax + b 与 y = c/x 相交于二、四象限
+            - button "C y = ax + b 过一、二、四象限" [ref=e266]:
+              - generic [ref=e267]: C
+              - paragraph [ref=e268]: y = ax + b 过一、二、四象限
+            - button "D 反比例函数图像在第二、四象限" [ref=e269]:
+              - generic [ref=e270]: D
+              - paragraph [ref=e271]: 反比例函数图像在第二、四象限
+          - button "提交答案" [disabled] [ref=e273]
