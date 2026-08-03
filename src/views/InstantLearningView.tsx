@@ -273,11 +273,11 @@ export const InstantLearningView: React.FC<InstantLearningViewProps> = ({
               掌握度已升级
             </h4>
             <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">
-              状态：稳定掌握
+              状态：已练习
             </span>
           </div>
           <p className="text-xs text-emerald-100 font-medium leading-relaxed">
-            【{topic}】已成功升入稳定掌握区！
+            【{topic}】已完成练习验证，并生成练习知识卡！
           </p>
         </div>
       )}

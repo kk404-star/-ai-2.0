@@ -8,10 +8,11 @@ import {
   BookOpen,
 } from 'lucide-react';
 import gsap from 'gsap';
-import { StudentProfile, ScreenType } from '../types';
+import { StudentProfile, ScreenType, LearningEvidenceBase, ERROR_CATEGORIES } from '../types';
 
 interface DiagnosticReportViewProps {
   student: StudentProfile;
+  learningEvidence: LearningEvidenceBase;
   onNavigateToScreen: (screen: ScreenType) => void;
 }
 
@@ -211,60 +212,63 @@ interface WeakKnowledgePointItem {
 
 export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
   student,
+  learningEvidence,
   onNavigateToScreen,
 }) => {
   const [subject, setSubject] = useState<string>('全科');
   const [timeRange, setTimeRange] = useState<'7days' | '30days'>('7days');
 
-  // PRD 13.5 - 13.9 Factual Calculated Data
   const is7Days = timeRange === '7days';
+  const periodFactor = is7Days ? 0.45 : 1;
+  const evidencePoints = learningEvidence.knowledgePoints.filter((point) => subject === '全科' || point.subject === subject);
+  const totalPoints = evidencePoints.length;
+  const coveredPoints = evidencePoints.filter((point) => point.status !== '未学习').length;
+  const practicedQuestions = evidencePoints.reduce((sum, point) => sum + point.practicedQuestionCount, 0);
+  const periodQuestions = Math.round(practicedQuestions * periodFactor);
+  const periodWrongQuestions = Math.min(periodQuestions, Math.round(learningEvidence.wrongQuestionCount * periodFactor));
 
   const stats = {
-    totalQuestions: is7Days ? 42 : 156,
-    correctCount: is7Days ? 31 : 122,
-    wrongCount: is7Days ? 11 : 34,
-    accuracy: is7Days ? 73.8 : 78.2,
-    coveredPoints: is7Days ? 18 : 32,
-    totalPoints: 45,
-    coveragePercent: is7Days ? 40 : 71.1,
+    totalQuestions: periodQuestions,
+    correctCount: Math.max(0, periodQuestions - periodWrongQuestions),
+    wrongCount: periodWrongQuestions,
+    accuracy: periodQuestions > 0 ? Number((((periodQuestions - periodWrongQuestions) / periodQuestions) * 100).toFixed(1)) : 0,
+    coveredPoints,
+    totalPoints,
+    coveragePercent: totalPoints > 0 ? Number(((coveredPoints / totalPoints) * 100).toFixed(1)) : 0,
   };
 
-  // PRD 13.7 Weak Knowledge Points List sorted by lowest accuracy
-  const weakKnowledgePoints: WeakKnowledgePointItem[] = [
-    {
-      id: 'kp1',
-      name: '二次函数顶点与对称轴公式',
-      cycleQuestions: 12,
-      cycleAccuracy: 41.6,
-      currentStatus: '应用不足',
-      recommendAction: '重做错题',
-    },
-    {
-      id: 'kp2',
-      name: '去括号与系数符号分配律',
-      cycleQuestions: 8,
-      cycleAccuracy: 50.0,
-      currentStatus: '概念不足',
-      recommendAction: '复习概念',
-    },
-    {
-      id: 'kp3',
-      name: '切线方程与导数几何意义',
-      cycleQuestions: 6,
-      cycleAccuracy: 50.0,
-      currentStatus: '需复习',
-      recommendAction: '加强应用',
-    },
-  ];
+  const weakKnowledgePoints: WeakKnowledgePointItem[] = evidencePoints
+    .filter((point) => point.status !== '已练习' || point.unpracticedQuestionCount > 0)
+    .map((point) => ({
+      id: point.knowledgeCode,
+      name: point.title,
+      cycleQuestions: point.totalQuestionCount,
+      cycleAccuracy: point.totalQuestionCount > 0
+        ? Number(((point.practicedQuestionCount / point.totalQuestionCount) * 100).toFixed(1))
+        : 0,
+      currentStatus: point.status === '未学习' ? '概念不足' as const
+        : point.status === '学习中' ? '需复习' as const
+        : '应用不足' as const,
+      recommendAction: point.status === '未学习' || point.status === '学习中'
+        ? '复习概念' as const
+        : point.status === '已学习' ? '加强应用' as const : '重做错题' as const,
+    }))
+    .sort((a, b) => a.cycleAccuracy - b.cycleAccuracy)
+    .slice(0, 3);
 
-  // PRD 13.8 Error Cause Distribution
-  const errorDistribution = [
-    { category: '计算错误', count: 5, percent: 45.5, color: 'bg-rose-500' },
-    { category: '概念没理解', count: 3, percent: 27.3, color: 'bg-amber-500' },
-    { category: '审题遗漏', count: 2, percent: 18.2, color: 'bg-blue-500' },
-    { category: '知识点混淆', count: 1, percent: 9.0, color: 'bg-purple-500' },
-    { category: '推理跳步', count: 0, percent: 0, color: 'bg-slate-300' },
-  ];
+  const distributionColors = ['bg-rose-500', 'bg-amber-500', 'bg-blue-500', 'bg-purple-500', 'bg-slate-300'];
+  const totalErrorCount = ERROR_CATEGORIES.reduce((sum, category) => sum + learningEvidence.errorCategoryCounts[category], 0);
+  const errorDistribution = ERROR_CATEGORIES.map((category, index) => {
+    const count = learningEvidence.errorCategoryCounts[category];
+    return {
+      category,
+      count,
+      percent: totalErrorCount > 0 ? Number(((count / totalErrorCount) * 100).toFixed(1)) : 0,
+      color: distributionColors[index],
+    };
+  });
+  const primaryWeakPoint = weakKnowledgePoints[0];
+  const topErrorCategories = [...errorDistribution].sort((a, b) => b.count - a.count).slice(0, 2);
 
   return (
     <div className="px-4 pt-3 pb-24 space-y-3 animate-fade-in">
@@ -450,7 +454,12 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
           <span>AI 诊断总结</span>
         </div>
         <p className="text-xs text-slate-800 leading-relaxed font-medium">
-          根据{timeRange === '7days' ? '近7天' : '近30天'}共 {stats.totalQuestions} 道有效答题记录：你对【{subject}】的知识点覆盖度为 {stats.coveragePercent}%。主要的失分归因集中在<span className="text-rose-600 font-bold">【计算错误】(45.5%)</span> 与 <span className="text-amber-600 font-bold">【概念没理解】(27.3%)</span>。特别在【二次函数顶点与对称轴公式】相关题目中正确率较低 ({weakKnowledgePoints[0].cycleAccuracy}%)。
+          根据统一学习证据：{timeRange === '7days' ? '近7天' : '近30天'}共记录 {stats.totalQuestions} 道练习，【{subject}】知识点覆盖度为 {stats.coveragePercent}%。
+          {topErrorCategories[0]?.count > 0 && (
+            <> 主要错因为<span className="font-bold text-rose-600">【{topErrorCategories[0].category}】({topErrorCategories[0].percent}%)</span>
+            {topErrorCategories[1]?.count > 0 && <> 与 <span className="font-bold text-amber-600">【{topErrorCategories[1].category}】({topErrorCategories[1].percent}%)</span></>}。</>
+          )}
+          {primaryWeakPoint && <>下一步建议优先处理【{primaryWeakPoint.name}】，当前证据完成度为 {primaryWeakPoint.cycleAccuracy}%。</>}
         </p>
       </div>
 
@@ -480,7 +489,7 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs">
             <div>
               <span className="font-bold text-slate-900">2. 补学概念薄弱</span>
-              <p className="text-[11px] text-slate-500 mt-0.5">重新学习【二次函数顶点与对称轴公式】</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">优先学习【{primaryWeakPoint?.name || '当前薄弱知识点'}】</p>
             </div>
             <button
               onClick={() => onNavigateToScreen('knowledge_study')}

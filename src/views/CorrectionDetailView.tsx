@@ -203,12 +203,12 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
           {isAddedToWrong ? (
             <>
               <Check className="w-4 h-4 text-emerald-600" />
-              已加入错题本
+              已加入错题
             </>
           ) : (
             <>
               <BookMarked className="w-4 h-4" />
-              加入错题本
+              加入错题
             </>
           )}
         </button>
@@ -218,7 +218,7 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
           className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
         >
           <Sparkles className="w-4 h-4" />
-          学习这道错题
+          学习变式
         </button>
       </div>
 
@@ -282,7 +282,7 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-bold text-white shadow-md transition-all hover:bg-emerald-700 active:scale-[0.98]"
               >
                 <BookMarked className="h-4 w-4" />
-                确认加入错题本
+                确认加入错题
               </button>
             </div>
           </div>

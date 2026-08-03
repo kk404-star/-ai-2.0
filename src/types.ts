@@ -20,7 +20,7 @@ export const ERROR_CATEGORIES = ['概念没理解', '计算错误', '审题遗�
 
 export type ErrorCategory = (typeof ERROR_CATEGORIES)[number];
 
-export type MasteryState = '未学' | '学习中' | '待验证' | '巩固中' | '待复习' | '已完成' | '稳定掌握';
+export type MasteryState = '未学习' | '学习中' | '已学习' | '已练习';
 
 export type ConceptLevel = '0 - 未理解' | '1 - 知道定义' | '2 - 理解特征' | '3 - 能解释易混点' | '4 - 主动讲清楚';
 
@@ -89,6 +89,38 @@ export interface KnowledgeL3Point {
   practicedQuestionCount: number;
   masteryState: MasteryState;
   hasVerificationQuiz: boolean;
+}
+
+export interface KnowledgeEvidence {
+  knowledgeCode: string;
+  title: string;
+  subject: SubjectType;
+  grade: GradeType;
+  status: MasteryState;
+  totalQuestionCount: number;
+  practicedQuestionCount: number;
+  unpracticedQuestionCount: number;
+}
+
+export interface KnowledgeCard {
+  id: string;
+  knowledgeCode: string;
+  title: string;
+  subject: SubjectType;
+  type: '学习卡' | '练习卡';
+  status: Extract<MasteryState, '已学习' | '已练习'>;
+  evidenceText: string;
+  unpracticedQuestionCount: number;
+}
+
+export interface LearningEvidenceBase {
+  knowledgePoints: KnowledgeEvidence[];
+  knowledgeCards: KnowledgeCard[];
+  totalQuestionCount: number;
+  practicedQuestionCount: number;
+  wrongQuestionCount: number;
+  unreviewedWrongQuestionCount: number;
+  errorCategoryCounts: Record<ErrorCategory, number>;
 }
 
 export interface KnowledgeL2Section {

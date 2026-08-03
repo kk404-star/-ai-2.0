@@ -35,7 +35,7 @@ export const sampleNextStepSuggestion: NextStepSuggestion = {
   title: '二次函数符号变号错题急救',
   reason: '检测到你在昨天拍照批改中遗留 1 道未即时消化的错题（括号负号分配律计算疏忽），建议优先完成 3 分钟针对性讲解与验证题！',
   subject: '数学',
-  actionText: '立即学习这道错题',
+  actionText: '立即学习变式',
   targetScreen: 'instant_learning',
   priorityLabel: 'P0 错题急救',
 };
@@ -157,15 +157,15 @@ export const sampleKnowledgeTree: KnowledgeL1Chapter[] = [
             title: '二次函数的定义与 a≠0 判定',
             boundQuestionCount: 12,
             practicedQuestionCount: 12,
-            masteryState: '稳定掌握',
+            masteryState: '已练习',
             hasVerificationQuiz: true,
           },
           {
             code: 'MATH-L3-02',
             title: '二次函数顶点坐标与对称轴公式',
             boundQuestionCount: 8,
-            practicedQuestionCount: 3,
-            masteryState: '待验证',
+            practicedQuestionCount: 0,
+            masteryState: '已学习',
             hasVerificationQuiz: true,
           },
           {
@@ -187,7 +187,7 @@ export const sampleKnowledgeTree: KnowledgeL1Chapter[] = [
             title: '韦达定理求值与变式应用',
             boundQuestionCount: 15,
             practicedQuestionCount: 6,
-            masteryState: '待复习',
+            masteryState: '已练习',
             hasVerificationQuiz: true,
           },
           {
@@ -195,7 +195,7 @@ export const sampleKnowledgeTree: KnowledgeL1Chapter[] = [
             title: '根的判别式 Δ 与解的情况判断',
             boundQuestionCount: 6,
             practicedQuestionCount: 4,
-            masteryState: '巩固中',
+            masteryState: '已练习',
             hasVerificationQuiz: true,
           },
         ],
@@ -217,7 +217,7 @@ export const sampleKnowledgeTree: KnowledgeL1Chapter[] = [
             title: '矩形对角线相等性质证明',
             boundQuestionCount: 10,
             practicedQuestionCount: 0,
-            masteryState: '未学',
+            masteryState: '未学习',
             hasVerificationQuiz: true,
           },
           {
@@ -225,7 +225,7 @@ export const sampleKnowledgeTree: KnowledgeL1Chapter[] = [
             title: '菱形四条边相等与面积公式',
             boundQuestionCount: 7,
             practicedQuestionCount: 7,
-            masteryState: '已完成',
+            masteryState: '已练习',
             hasVerificationQuiz: true,
           },
         ],
@@ -333,7 +333,7 @@ export const initialCorrectionHistory: CorrectionRecord[] = [
       '4. 最终求和：9 - 6 + 1 = 4。'
     ],
     knowledgePoints: ['函数求值', '二次函数', '代数运算'],
-    encouragement: '“这道题的核心是**函数的代入运算**。虽然思路正确，但计算时要小心哦。建议通过‘学习这道错题’来强化一下同类练习。”'
+    encouragement: '“这道题的核心是 函数的代入运算。虽然思路正确，但计算时要小心哦。建议通过‘学习变式’来强化一下同类练习。”'
   },
   {
     id: 'cr-2',
@@ -581,7 +581,7 @@ export const sampleKnowledgePoint: KnowledgePoint = {
   title: '二次函数的图像与性质',
   subject: '数学',
   grade: '初二',
-  masteryState: '巩固中',
+  masteryState: '学习中',
   progressPercent: 40,
   currentStep: 1,
   totalSteps: 5,

@@ -148,7 +148,7 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
         <div className="flex justify-between items-center text-xs">
           <span className="font-bold text-slate-900 text-sm">{knowledgePoint.title}</span>
           <span className="font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full text-[11px]">
-            掌握度 {masteryProgress}% {masteryProgress >= 82 ? '· 稳定掌握' : '· 学习中'}
+            {knowledgePoint.masteryState} · 学习进度 {masteryProgress}%
           </span>
         </div>
 

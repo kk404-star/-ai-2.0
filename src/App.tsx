@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MobileFrame } from './components/MobileFrame';
 import { Header } from './components/Header';
 import { Navigation } from './components/Navigation';
@@ -35,7 +35,9 @@ import {
   GradeType, 
   StudentProfile, 
   CorrectionRecord, 
-  WrongQuestion 
+  WrongQuestion,
+  LearningEvidenceBase,
+  ERROR_CATEGORIES,
 } from './types';
 
 export default function App() {
@@ -57,6 +59,85 @@ export default function App() {
   const [selectedWrongItem, setSelectedWrongItem] = useState<WrongQuestion | null>(null);
   const [selectedKnowledgePointTitle, setSelectedKnowledgePointTitle] = useState<string | null>(null);
   const [selectedKnowledgePointCode, setSelectedKnowledgePointCode] = useState<string | null>(null);
+
+  const learningEvidence = useMemo<LearningEvidenceBase>(() => {
+    const knowledgePoints = knowledgeTree.flatMap((chapter) =>
+      chapter.children.flatMap((section) => section.children.map((point) => ({
+        knowledgeCode: point.code,
+        title: point.title,
+        subject: chapter.subject,
+        grade: chapter.grade,
+        status: point.masteryState,
+        totalQuestionCount: point.boundQuestionCount,
+        practicedQuestionCount: point.practicedQuestionCount,
+        unpracticedQuestionCount: Math.max(0, point.boundQuestionCount - point.practicedQuestionCount),
+      })))
+    );
+
+    const knowledgeCards = knowledgePoints
+      .flatMap((point) => {
+        if (point.status !== '已学习' && point.status !== '已练习') return [];
+        return [{
+          id: `${point.knowledgeCode}-${point.status}`,
+          knowledgeCode: point.knowledgeCode,
+          title: point.title,
+          subject: point.subject,
+          type: point.status === '已练习' ? '练习卡' as const : '学习卡' as const,
+          status: point.status,
+          evidenceText: point.status === '已练习'
+            ? `已练 ${point.practicedQuestionCount} 题，待练 ${point.unpracticedQuestionCount} 题`
+            : '已完成知识点学习，建议进入练习验证',
+          unpracticedQuestionCount: point.unpracticedQuestionCount,
+        }];
+      })
+      .sort((a, b) => {
+        const getPriority = (card: typeof a) => {
+          if (card.type === '学习卡') return 0;
+          return card.unpracticedQuestionCount > 0 ? 1 : 2;
+        };
+        return getPriority(a) - getPriority(b);
+      });
+
+    const errorCategoryCounts = Object.fromEntries(
+      ERROR_CATEGORIES.map((category) => [category, wrongQuestions.filter((item) => item.errorCategory === category).length])
+    ) as LearningEvidenceBase['errorCategoryCounts'];
+
+    return {
+      knowledgePoints,
+      knowledgeCards,
+      totalQuestionCount: knowledgePoints.reduce((sum, point) => sum + point.totalQuestionCount, 0),
+      practicedQuestionCount: knowledgePoints.reduce((sum, point) => sum + point.practicedQuestionCount, 0),
+      wrongQuestionCount: wrongQuestions.length,
+      unreviewedWrongQuestionCount: wrongQuestions.filter((item) => item.reviewStatus === '未复习').length,
+      errorCategoryCounts,
+    };
+  }, [knowledgeTree, wrongQuestions]);
+
+  useEffect(() => {
+    if (activeScreen !== 'knowledge_study' || !selectedKnowledgePointCode) return;
+    setKnowledgeTree((chapters) => chapters.map((chapter) => ({
+      ...chapter,
+      children: chapter.children.map((section) => ({
+        ...section,
+        children: section.children.map((point) => point.code === selectedKnowledgePointCode && point.masteryState === '未学习'
+          ? { ...point, masteryState: '学习中' }
+          : point),
+      })),
+    })));
+  }, [activeScreen, selectedKnowledgePointCode]);
+
+  const markSelectedKnowledgeAsLearned = () => {
+    if (!selectedKnowledgePointCode) return;
+    setKnowledgeTree((chapters) => chapters.map((chapter) => ({
+      ...chapter,
+      children: chapter.children.map((section) => ({
+        ...section,
+        children: section.children.map((point) => point.code === selectedKnowledgePointCode && point.masteryState !== '已练习'
+          ? { ...point, masteryState: '已学习' }
+          : point),
+      })),
+    })));
+  };
 
   const selectKnowledgePoint = (title: string, code?: string) => {
     if (!title) {
@@ -117,7 +198,7 @@ export default function App() {
         ? { ...question, practiceStatus: '已练习' }
         : question));
     }
-    if (selectedKnowledgePointCode && newlyPracticedQuestionCount > 0) {
+    if (selectedKnowledgePointCode && completedCount > 0) {
       setKnowledgeTree((chapters) => chapters.map((chapter) => ({
         ...chapter,
         children: chapter.children.map((section) => ({
@@ -125,6 +206,7 @@ export default function App() {
           children: section.children.map((point) => point.code === selectedKnowledgePointCode
             ? {
                 ...point,
+                masteryState: '已练习',
                 practicedQuestionCount: Math.min(
                   point.boundQuestionCount,
                   point.practicedQuestionCount + newlyPracticedQuestionCount
@@ -241,9 +323,16 @@ export default function App() {
       return (
         <KnowledgeStudyView
           knowledgePoint={selectedKnowledgePointTitle
-            ? { ...sampleKnowledgePoint, title: selectedKnowledgePointTitle }
+            ? {
+                ...sampleKnowledgePoint,
+                title: selectedKnowledgePointTitle,
+                masteryState: learningEvidence.knowledgePoints.find((point) => point.knowledgeCode === selectedKnowledgePointCode)?.status || '学习中',
+              }
             : sampleKnowledgePoint}
-          onNavigateToQuiz={() => setActiveScreen('practice_quiz')}
+          onNavigateToQuiz={() => {
+            markSelectedKnowledgeAsLearned();
+            setActiveScreen('practice_quiz');
+          }}
         />
       );
     }
@@ -311,6 +400,7 @@ export default function App() {
       return (
         <DiagnosticReportView
           student={student}
+          learningEvidence={learningEvidence}
           onNavigateToScreen={(screen) => {
             if (screen === 'practice' || screen === 'practice_quiz') selectKnowledgePoint('');
             setActiveScreen(screen);
@@ -351,6 +441,7 @@ export default function App() {
           <StudyView
             categories={categories}
             knowledgeTree={knowledgeTree}
+            knowledgeCards={learningEvidence.knowledgeCards}
             currentSubject={student.currentSubject}
             onSubjectChange={handleSubjectChange}
             onNavigateToScreen={(screen) => setActiveScreen(screen)}

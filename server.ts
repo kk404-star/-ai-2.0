@@ -95,7 +95,7 @@ async function startServer() {
               "4. 最终求和：9 - 6 + 1 = 4。"
             ],
             knowledgePoints: ["函数求值", "二次函数", "代数运算"],
-            encouragement: "“这道题的核心是**函数的代入运算**。虽然思路正确，但计算时要小心哦。建议通过‘学习这道错题’来强化一下同类练习。”"
+            encouragement: "“这道题的核心是 函数的代入运算。虽然思路正确，但计算时要小心哦。建议通过‘学习变式’来强化一下同类练习。”"
           },
           isFallback: true
         });
@@ -156,7 +156,7 @@ async function startServer() {
             "4. 最终求和：9 - 6 + 1 = 4。"
           ],
           knowledgePoints: ["函数求值", "二次函数", "代数运算"],
-          encouragement: "“这道题的核心是**函数的代入运算**。虽然思路正确，但计算时要小心哦。”"
+          encouragement: "“这道题的核心是 函数的代入运算。虽然思路正确，但计算时要小心哦。”"
         };
       }
 
@@ -179,7 +179,7 @@ async function startServer() {
             "4. 最终求和：9 - 6 + 1 = 4。"
           ],
           knowledgePoints: ["函数求值", "二次函数", "代数运算"],
-          encouragement: "“这道题的核心是**函数的代入运算**。虽然思路正确，但计算时要小心哦。”"
+          encouragement: "“这道题的核心是 函数的代入运算。虽然思路正确，但计算时要小心哦。”"
         },
         isFallback: true
       });

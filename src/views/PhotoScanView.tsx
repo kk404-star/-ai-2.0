@@ -229,7 +229,7 @@ export const PhotoScanView: React.FC<PhotoScanViewProps> = ({
                     }}
                     className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-xs active:scale-95 transition-all"
                   >
-                    <span>学习这道错题</span>
+                    <span>学习变式</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>

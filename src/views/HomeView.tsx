@@ -341,7 +341,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   }}
                   className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition-all active:scale-95 shadow-2xs flex items-center gap-0.5"
                 >
-                  <span>练题</span>
+                  <span>练习</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -352,7 +352,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
               <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-500" />
               <p className="mt-2 text-xs font-bold text-slate-700">暂无关联错题</p>
-              <p className="mt-1 text-[11px] text-slate-400">拍照批改或加入错题本后，会自动按知识点统计</p>
+              <p className="mt-1 text-[11px] text-slate-400">拍照批改或加入错题后，会自动按知识点统计</p>
             </div>
           )}
         </div>

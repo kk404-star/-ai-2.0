@@ -139,7 +139,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="space-y-0.5">
             <div className="flex items-center gap-1.5">
               <Award className="w-4 h-4 text-emerald-600 shrink-0" />
-              <h3 className="text-sm font-extrabold text-slate-900">AI 学习服务中心</h3>
+              <h3 className="text-sm font-extrabold text-slate-900">学习服务中心</h3>
             </div>
             <p className="text-xs text-slate-500 font-medium">{student.aiPackageName}</p>
           </div>
