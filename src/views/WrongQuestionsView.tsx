@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, ChevronDown, ChevronUp, CheckCircle2, RefreshCw, HelpCircle, FileText, XCircle, Sparkles } from 'lucide-react';
+import { Camera, ChevronDown, ChevronUp, CheckCircle2, HelpCircle, FileText, XCircle, Sparkles } from 'lucide-react';
 import { ERROR_CATEGORIES, WrongQuestion, ScreenType } from '../types';
 import { CustomDropdownSelect } from '../components/SubjectSelect';
 
@@ -119,6 +119,9 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${item.reviewStatus === '已掌握' ? 'bg-emerald-50 text-emerald-700' : item.reviewStatus === '复习中' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
+                        {item.reviewStatus}
+                      </span>
                       <span className="text-xs font-mono text-slate-400">{item.date}</span>
                       {isExpanded ? (
                         <ChevronUp className="w-4 h-4 text-emerald-600" />
@@ -223,7 +226,10 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
                     </div>
 
                     {/* Bottom Practice Action */}
-                    <div className="flex items-center justify-end pt-1">
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <span className="text-[10px] font-medium text-slate-400">
+                        {item.reviewStatus === '已掌握' ? '两轮验证已完成' : `第 ${item.reviewStage || 1} 轮 · ${item.nextReviewAt || '待安排'}`}
+                      </span>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => {
@@ -235,20 +241,7 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
                           className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-3 py-1.5 rounded-xl transition-all active:scale-95"
                         >
                           <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                          错题强化
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            if (onSelectWrongItemForInstantLearning) {
-                              onSelectWrongItemForInstantLearning(item);
-                            }
-                            onNavigateToScreen('practice_quiz');
-                          }}
-                          className="flex items-center gap-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-xs"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                          复练此题
+                          {item.reviewStatus === '已掌握' ? '再次练习' : '复习此题'}
                         </button>
                       </div>
                     </div>
@@ -262,4 +255,3 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
     </div>
   );
 };
-

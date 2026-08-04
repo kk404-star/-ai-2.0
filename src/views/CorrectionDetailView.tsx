@@ -7,24 +7,29 @@ import {
   ListOrdered, 
   Bot, 
   BookMarked, 
-  Sparkles,
-  Check
+  Check,
+  Camera,
+  Home
 } from 'lucide-react';
-import { CorrectionRecord, ErrorCategory, ERROR_CATEGORIES, ScreenType } from '../types';
+import { CorrectionRecord, ErrorCategory, ERROR_CATEGORIES } from '../types';
 
 interface CorrectionDetailViewProps {
   record: CorrectionRecord;
-  onNavigateToScreen: (screen: ScreenType) => void;
-  onAddToWrongQuestions?: (record: CorrectionRecord, errorCategory: ErrorCategory) => void;
+  onAddToWrongQuestions?: (record: CorrectionRecord, errorCategory: ErrorCategory) => boolean;
+  isAlreadyAdded?: boolean;
+  onContinueScan: () => void;
+  onReturnHome: () => void;
 }
 
 export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
   record,
-  onNavigateToScreen,
   onAddToWrongQuestions,
+  isAlreadyAdded = false,
+  onContinueScan,
+  onReturnHome,
 }) => {
   const [showImageZoom, setShowImageZoom] = useState(false);
-  const [isAddedToWrong, setIsAddedToWrong] = useState(false);
+  const [isAddedToWrong, setIsAddedToWrong] = useState(isAlreadyAdded);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const [showErrorCausePicker, setShowErrorCausePicker] = useState(false);
   const [selectedErrorCategory, setSelectedErrorCategory] = useState<ErrorCategory>(record.errorCategory);
@@ -48,11 +53,9 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
   };
 
   const handleAddWrong = () => {
-    setIsAddedToWrong(true);
+    const added = onAddToWrongQuestions?.(record, selectedErrorCategory) ?? false;
+    setIsAddedToWrong(added || isAlreadyAdded);
     setShowErrorCausePicker(false);
-    if (onAddToWrongQuestions) {
-      onAddToWrongQuestions(record, selectedErrorCategory);
-    }
   };
 
   return (
@@ -190,36 +193,38 @@ export const CorrectionDetailView: React.FC<CorrectionDetailViewProps> = ({
       </div>
 
       {/* Fixed Bottom Actions */}
-      <div className="mobile-fixed-footer flex gap-2.5">
-        <button
-          onClick={() => setShowErrorCausePicker(true)}
-          disabled={isAddedToWrong}
-          className={`flex-1 h-12 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-            isAddedToWrong
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-              : 'border-emerald-700 text-emerald-700 hover:bg-emerald-50'
-          }`}
-        >
-          {isAddedToWrong ? (
-            <>
-              <Check className="w-4 h-4 text-emerald-600" />
-              已加入错题
-            </>
-          ) : (
-            <>
+      <div className="mobile-fixed-footer">
+        {isAddedToWrong ? (
+          <div className="space-y-2.5">
+            <p className="text-center text-[11px] font-bold text-emerald-700">已加入错题 · 明日复习</p>
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={onReturnHome}
+                className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 transition-all hover:bg-slate-50 active:scale-95"
+              >
+                <Home className="h-4 w-4" />
+                返回首页
+              </button>
+              <button
+                type="button"
+                onClick={onContinueScan}
+                className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-xs font-bold text-white shadow-md transition-all hover:bg-emerald-700 active:scale-95"
+              >
+                <Camera className="h-4 w-4" />
+                继续拍照
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowErrorCausePicker(true)}
+            className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-700 text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-50 active:scale-95"
+          >
               <BookMarked className="w-4 h-4" />
               加入错题
-            </>
-          )}
-        </button>
-
-        <button
-          onClick={() => onNavigateToScreen('instant_learning')}
-          className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
-        >
-          <Sparkles className="w-4 h-4" />
-          学习变式
-        </button>
+          </button>
+        )}
       </div>
 
       {/* Error Cause Picker */}

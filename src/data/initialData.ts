@@ -35,7 +35,7 @@ export const sampleNextStepSuggestion: NextStepSuggestion = {
   title: '二次函数符号变号错题急救',
   reason: '检测到你在昨天拍照批改中遗留 1 道未即时消化的错题（括号负号分配律计算疏忽），建议优先完成 3 分钟针对性讲解与验证题！',
   subject: '数学',
-  actionText: '立即学习变式',
+  actionText: '开始今日复习',
   targetScreen: 'instant_learning',
   priorityLabel: 'P0 错题急救',
 };
@@ -333,7 +333,7 @@ export const initialCorrectionHistory: CorrectionRecord[] = [
       '4. 最终求和：9 - 6 + 1 = 4。'
     ],
     knowledgePoints: ['函数求值', '二次函数', '代数运算'],
-    encouragement: '“这道题的核心是 函数的代入运算。虽然思路正确，但计算时要小心哦。建议通过‘学习变式’来强化一下同类练习。”'
+    encouragement: '“这道题的核心是函数的代入运算。虽然思路正确，但计算时要小心哦。可以先加入错题本，系统会在合适的时间安排复习。”'
   },
   {
     id: 'cr-2',

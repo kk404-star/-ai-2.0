@@ -38,6 +38,15 @@ import {
   LearningEvidenceBase,
   ERROR_CATEGORIES,
 } from './types';
+import {
+  applyWrongQuestionReview,
+  addDays,
+  getDueWrongQuestions,
+  isReviewDue,
+  normalizeWrongQuestion,
+  toLocalDateKey,
+  WRONG_QUESTIONS_STORAGE_KEY,
+} from './utils/wrongReview';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
@@ -51,13 +60,27 @@ export default function App() {
     ...question,
     practiceStatus: index < 2 ? '已练习' as const : '未练习' as const,
   })));
-  const [wrongQuestions, setWrongQuestions] = useState<WrongQuestion[]>(initialWrongQuestions);
+  const [wrongQuestions, setWrongQuestions] = useState<WrongQuestion[]>(() => {
+    try {
+      const saved = localStorage.getItem(WRONG_QUESTIONS_STORAGE_KEY);
+      const items = saved ? JSON.parse(saved) as WrongQuestion[] : initialWrongQuestions;
+      return items.map((item) => normalizeWrongQuestion(item));
+    } catch {
+      return initialWrongQuestions.map((item) => normalizeWrongQuestion(item));
+    }
+  });
   const [correctionHistory, setCorrectionHistory] = useState<CorrectionRecord[]>(initialCorrectionHistory);
   
   const [selectedCorrection, setSelectedCorrection] = useState<CorrectionRecord>(initialCorrectionHistory[0]);
   const [selectedWrongItem, setSelectedWrongItem] = useState<WrongQuestion | null>(null);
   const [selectedKnowledgePointTitle, setSelectedKnowledgePointTitle] = useState<string | null>(null);
   const [selectedKnowledgePointCode, setSelectedKnowledgePointCode] = useState<string | null>(null);
+  const todayReviewQuestions = useMemo(() => getDueWrongQuestions(wrongQuestions), [wrongQuestions]);
+  const dueWrongQuestionCount = useMemo(() => wrongQuestions.filter((item) => isReviewDue(item)).length, [wrongQuestions]);
+
+  useEffect(() => {
+    localStorage.setItem(WRONG_QUESTIONS_STORAGE_KEY, JSON.stringify(wrongQuestions));
+  }, [wrongQuestions]);
 
   const learningEvidence = useMemo<LearningEvidenceBase>(() => {
     const knowledgePoints = knowledgeTree.flatMap((chapter) =>
@@ -181,16 +204,7 @@ export default function App() {
       completedQuestionIdSet.has(question.id) && question.practiceStatus !== '已练习'
     ).length;
 
-    const practicedWrongQuestions = selectedWrongItem
-      ? completedCount > 0 ? [selectedWrongItem] : []
-      : selectedKnowledgePointTitle
-        ? wrongQuestions
-            .filter((item) => (item.knowledgePoints?.length ? item.knowledgePoints : [item.topic]).includes(selectedKnowledgePointTitle))
-            .slice(0, completedCount)
-        : [];
-    const practicedWrongIds = new Set(practicedWrongQuestions.map((item) => item.id));
-    const newlyReviewedCount = practicedWrongQuestions.filter((item) => item.reviewStatus === '未复习').length;
-    const newlyPracticedQuestionCount = newlyPracticedBankCount + newlyReviewedCount;
+    const newlyPracticedQuestionCount = newlyPracticedBankCount;
 
     if (completedQuestionIdSet.size > 0) {
       setQuestionBank((questions) => questions.map((question) => completedQuestionIdSet.has(question.id)
@@ -215,17 +229,6 @@ export default function App() {
         })),
       })));
     }
-    if (practicedWrongIds.size > 0) {
-      setWrongQuestions((items) => items.map((item) => practicedWrongIds.has(item.id)
-        ? { ...item, reviewStatus: '已掌握' }
-        : item));
-      if (newlyReviewedCount > 0) {
-        setStudent((current) => ({
-          ...current,
-          unreviewedWrongCount: Math.max(0, current.unreviewedWrongCount - newlyReviewedCount),
-        }));
-      }
-    }
     setSelectedKnowledgePointCode(null);
     setSelectedKnowledgePointTitle(null);
     setSelectedWrongItem(null);
@@ -243,7 +246,7 @@ export default function App() {
       case 'correction_detail':
         return '批改结果';
       case 'instant_learning':
-        return '错题针对性学习';
+        return '今日错题复习';
       case 'practice':
       case 'practice_quiz':
         return '考点真题练习';
@@ -287,7 +290,9 @@ export default function App() {
   };
 
   // Add Wrong Question from Correction Detail
-  const handleAddToWrongQuestions = (record: CorrectionRecord, errorCategory: CorrectionRecord['errorCategory']) => {
+  const handleAddToWrongQuestions = (record: CorrectionRecord, errorCategory: CorrectionRecord['errorCategory']): boolean => {
+    if (wrongQuestions.some((item) => item.sourceCorrectionId === record.id)) return false;
+    const today = toLocalDateKey();
     const newWrong: WrongQuestion = {
       id: 'wq-' + Date.now(),
       subject: record.subject,
@@ -300,15 +305,28 @@ export default function App() {
       difficulty: '基础',
       tags: [errorCategory, '基础题'],
       reviewStatus: '未复习',
+      sourceCorrectionId: record.id,
+      addedAt: today,
+      nextReviewAt: addDays(today, 1),
+      reviewStage: 1,
+      reviewFailureCount: 0,
+      reviewAttempts: [],
       steps: record.steps,
       knowledgePoints: record.knowledgePoints,
     };
 
     setWrongQuestions((prev) => [newWrong, ...prev]);
-    setStudent((prev) => ({
-      ...prev,
-      unreviewedWrongCount: prev.unreviewedWrongCount + 1,
-    }));
+    return true;
+  };
+
+  const handleCompleteWrongReview = (itemId: string, originalCorrect: boolean, variantCorrect: boolean) => {
+    setWrongQuestions((items) => items.map((item) => item.id === itemId
+      ? applyWrongQuestionReview(item, {
+          originalCorrect,
+          variantCorrect,
+          countedForMastery: Boolean(item.nextReviewAt && item.nextReviewAt <= toLocalDateKey()),
+        })
+      : item));
   };
 
   // Render current tab or sub-screen
@@ -335,15 +353,10 @@ export default function App() {
       return (
         <PhotoScanView
           records={correctionHistory}
+          wrongQuestions={wrongQuestions}
           onNavigateToDetail={(rec) => {
             setSelectedCorrection(rec);
             setActiveScreen('correction_detail');
-          }}
-          onNavigateToScreen={(screen) => setActiveScreen(screen)}
-          onNavigateToInstantLearning={(record) => {
-            setSelectedCorrection(record);
-            selectKnowledgePoint(record.knowledgePoints[0] || record.title);
-            setActiveScreen('instant_learning');
           }}
         />
       );
@@ -353,13 +366,13 @@ export default function App() {
       return (
         <CorrectionDetailView
           record={selectedCorrection}
-          onNavigateToScreen={(screen) => {
-            if (screen === 'instant_learning') {
-              selectKnowledgePoint(selectedCorrection.knowledgePoints[0] || selectedCorrection.title);
-            }
-            setActiveScreen(screen);
-          }}
           onAddToWrongQuestions={handleAddToWrongQuestions}
+          isAlreadyAdded={wrongQuestions.some((item) => item.sourceCorrectionId === selectedCorrection.id)}
+          onContinueScan={() => setActiveScreen('photo_scan')}
+          onReturnHome={() => {
+            setActiveScreen('tab');
+            setActiveTab('home');
+          }}
         />
       );
     }
@@ -373,6 +386,8 @@ export default function App() {
             setActiveScreen('tab');
             setActiveTab('home');
           }}
+          isDue={Boolean(selectedWrongItem && selectedWrongItem.nextReviewAt && selectedWrongItem.nextReviewAt <= toLocalDateKey())}
+          onCompleteReview={handleCompleteWrongReview}
         />
       );
     }
@@ -397,6 +412,10 @@ export default function App() {
           learningEvidence={learningEvidence}
           onNavigateToScreen={(screen) => {
             if (screen === 'practice' || screen === 'practice_quiz') selectKnowledgePoint('');
+            if (screen === 'instant_learning') {
+              const reviewItem = todayReviewQuestions[0] || wrongQuestions.find((item) => item.reviewStatus !== '已掌握');
+              if (reviewItem) selectWrongQuestion(reviewItem);
+            }
             setActiveScreen(screen);
           }}
         />
@@ -422,6 +441,7 @@ export default function App() {
             student={student}
             tasks={tasks}
             wrongQuestions={wrongQuestions}
+            todayReviewQuestions={todayReviewQuestions}
             onNavigateToScreen={(screen) => setActiveScreen(screen)}
             onOpenReport={() => setActiveScreen('diagnostic_report')}
             onSubjectChange={handleSubjectChange}
@@ -484,7 +504,7 @@ export default function App() {
       {activeScreen === 'tab' && (
         <Navigation
           activeTab={activeTab}
-          unreviewedWrongCount={student.unreviewedWrongCount}
+          unreviewedWrongCount={dueWrongQuestionCount}
           onTabChange={(tab) => setActiveTab(tab)}
           onScanClick={() => setActiveScreen('photo_scan')}
         />

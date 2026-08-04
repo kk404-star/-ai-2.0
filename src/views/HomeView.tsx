@@ -10,7 +10,8 @@ import {
   Calendar,
   Clock,
   Target,
-  CheckCircle2
+  CheckCircle2,
+  BookOpenCheck
 } from 'lucide-react';
 import { StudentProfile, TaskItem, ScreenType, SubjectType, WrongQuestion } from '../types';
 import { CheckInCalendarModal } from '../components/CheckInCalendarModal';
@@ -20,6 +21,7 @@ interface HomeViewProps {
   student: StudentProfile;
   tasks: TaskItem[];
   wrongQuestions?: WrongQuestion[];
+  todayReviewQuestions?: WrongQuestion[];
   onNavigateToScreen: (screen: ScreenType) => void;
   onOpenReport: () => void;
   onSubjectChange?: (subject: SubjectType) => void;
@@ -33,6 +35,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   student,
   tasks,
   wrongQuestions = [],
+  todayReviewQuestions = [],
   onNavigateToScreen,
   onOpenReport,
   onSubjectChange,
@@ -246,6 +249,45 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="text-[10px] font-bold text-emerald-600">
             较昨日 +6%
           </div>
+        </div>
+      </div>
+
+      {/* Today's scheduled wrong-question review */}
+      <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50 p-3.5 shadow-2xs">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+              <BookOpenCheck className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-sm font-extrabold text-slate-900">今日错题复习</h3>
+                {todayReviewQuestions.length > 0 && (
+                  <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                    {todayReviewQuestions.length} 题
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 text-xs font-medium text-slate-500">
+                {todayReviewQuestions.length > 0 ? '约 10 分钟，先重做原题再完成变式' : '今天没有到期错题，继续保持'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={todayReviewQuestions.length === 0}
+            onClick={() => {
+              const first = todayReviewQuestions[0];
+              if (!first) return;
+              onSelectWrongItemForInstantLearning?.(first);
+              onNavigateToScreen('instant_learning');
+            }}
+            className={`shrink-0 rounded-xl px-3 py-2 text-xs font-bold transition-all ${todayReviewQuestions.length > 0
+              ? 'bg-amber-500 text-white shadow-xs hover:bg-amber-600 active:scale-95'
+              : 'bg-white/70 text-slate-400'}`}
+          >
+            {todayReviewQuestions.length > 0 ? '开始复习' : '已完成'}
+          </button>
         </div>
       </div>
 

@@ -186,10 +186,25 @@ export interface WrongQuestion {
   difficulty: DifficultyLevel;
   tags: string[];
   reviewStatus: '未复习' | '复习中' | '已掌握';
+  sourceCorrectionId?: string;
+  addedAt?: string;
+  nextReviewAt?: string;
+  reviewStage?: 1 | 2;
+  lastReviewedAt?: string;
+  reviewFailureCount?: number;
+  reviewAttempts?: WrongQuestionReviewAttempt[];
   image?: string;
   steps?: string[];
   knowledgePoints?: string[];
   options?: { key: string; text: string }[];
+}
+
+export interface WrongQuestionReviewAttempt {
+  reviewedAt: string;
+  stage: 1 | 2;
+  originalCorrect: boolean;
+  variantCorrect: boolean;
+  countedForMastery: boolean;
 }
 
 export interface CorrectionRecord {

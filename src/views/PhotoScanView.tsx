@@ -1,21 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Image, ChevronRight, CheckCircle2, AlertCircle, Sparkles, Edit3, X, Check, ArrowRight } from 'lucide-react';
-import { CorrectionRecord, ScreenType, SubjectType } from '../types';
+import { Camera, Image, ChevronRight, AlertCircle, Sparkles, Edit3, X, Check, Download } from 'lucide-react';
+import { CorrectionRecord, SubjectType, WrongQuestion } from '../types';
 
 interface PhotoScanViewProps {
   records: CorrectionRecord[];
+  wrongQuestions: WrongQuestion[];
   onNavigateToDetail: (record: CorrectionRecord) => void;
-  onNavigateToScreen: (screen: ScreenType) => void;
-  onNavigateToInstantLearning?: (record: CorrectionRecord) => void;
 }
 
 const SUBJECTS: SubjectType[] = ['数学', '物理', '化学', '生物', '英语', '语文', '历史', '地理', '政治'];
 
 export const PhotoScanView: React.FC<PhotoScanViewProps> = ({
   records,
+  wrongQuestions,
   onNavigateToDetail,
-  onNavigateToScreen,
-  onNavigateToInstantLearning,
 }) => {
   const [photoMode, setPhotoMode] = useState<'single' | 'multi'>('single');
   const [selectedSubject, setSelectedSubject] = useState<SubjectType>('数学');
@@ -29,6 +27,39 @@ export const PhotoScanView: React.FC<PhotoScanViewProps> = ({
   const [ocrUserAnswer, setOcrUserAnswer] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const wrongCorrectionRecords = records.filter((record) => record.wrongCount > 0);
+
+  const handleExportWrongQuestions = () => {
+    if (wrongQuestions.length === 0) return;
+
+    const protectSpreadsheetCell = (value: unknown) => {
+      const text = String(value ?? '').replace(/\r?\n/g, ' ');
+      const safeText = /^[=+\-@]/.test(text) ? `'${text}` : text;
+      return `"${safeText.replace(/"/g, '""')}"`;
+    };
+    const headers = ['序号', '学科', '知识点', '题目', '选项 A', '选项 B', '选项 C', '选项 D', '正确答案'];
+    const rows = wrongQuestions.map((item, index) => {
+      const getOption = (key: string) => item.options?.find((option) => option.key === key)?.text || '';
+      return [
+      index + 1,
+      item.subject,
+      item.knowledgePoints?.join('、') || item.topic,
+      item.questionText,
+      getOption('A'),
+      getOption('B'),
+      getOption('C'),
+      getOption('D'),
+      item.correctAnswer,
+      ];
+    });
+    const csv = `\uFEFF${[headers, ...rows].map((row) => row.map(protectSpreadsheetCell).join(',')).join('\r\n')}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `错题收录-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleStartCaptureProcess = (sampleRecordIndex: number = 0) => {
     const targetRecord = records[sampleRecordIndex] || records[0];
@@ -169,15 +200,26 @@ export const PhotoScanView: React.FC<PhotoScanViewProps> = ({
         )}
       </div>
 
-      {/* Correction History Records */}
+      {/* Collected wrong questions */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <h3 className="text-base font-bold text-slate-900">历史批改记录</h3>
-          <span className="text-xs font-semibold text-slate-500">全部 {records.length} 篇 ▾</span>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">错题收录</h3>
+            <p className="mt-0.5 text-[11px] font-medium text-slate-400">已收录 {wrongQuestions.length} 题</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleExportWrongQuestions}
+            disabled={wrongQuestions.length === 0}
+            className="flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-100 active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+          >
+            <Download className="h-3.5 w-3.5" />
+            导出错题
+          </button>
         </div>
 
         <div className="space-y-2.5">
-          {records.map((record) => (
+          {wrongCorrectionRecords.map((record) => (
             <div
               key={record.id}
               className="bg-white p-3.5 rounded-2xl card-shadow border border-slate-200/80 space-y-2.5 hover:border-emerald-500 transition-all"
@@ -207,35 +249,21 @@ export const PhotoScanView: React.FC<PhotoScanViewProps> = ({
                         {record.wrongCount} 错{' '}
                         <span className="text-emerald-600">{record.correctCount} 对</span>
                       </span>
-                    ) : (
-                      <span className="text-xs font-bold text-emerald-600 flex items-center gap-0.5">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        全对
-                      </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 
                 <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
               </div>
 
-              {/* Instant learning CTA if wrong */}
-              {record.wrongCount > 0 && (
-                <div className="pt-2 border-t border-slate-100 flex justify-end">
-                  <button
-                    onClick={() => {
-                      if (onNavigateToInstantLearning) onNavigateToInstantLearning(record);
-                      else onNavigateToScreen('instant_learning');
-                    }}
-                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-xs active:scale-95 transition-all"
-                  >
-                    <span>学习变式</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
             </div>
           ))}
+          {wrongCorrectionRecords.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center">
+              <p className="text-sm font-bold text-slate-700">还没有收录错题</p>
+              <p className="mt-1 text-xs text-slate-400">拍照批改后，可在批改结果中选择加入错题</p>
+            </div>
+          )}
         </div>
       </div>
 
