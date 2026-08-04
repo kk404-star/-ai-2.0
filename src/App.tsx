@@ -353,7 +353,6 @@ export default function App() {
       return (
         <PhotoScanView
           records={correctionHistory}
-          wrongQuestions={wrongQuestions}
           onNavigateToDetail={(rec) => {
             setSelectedCorrection(rec);
             setActiveScreen('correction_detail');

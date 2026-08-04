@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Camera, ChevronDown, ChevronUp, CheckCircle2, HelpCircle, FileText, XCircle, Sparkles } from 'lucide-react';
-import { ERROR_CATEGORIES, WrongQuestion, ScreenType } from '../types';
+import { Camera, ChevronDown, ChevronUp, CheckCircle2, HelpCircle, FileText, XCircle, Sparkles, Download } from 'lucide-react';
+import { WrongQuestion, ScreenType } from '../types';
 import { CustomDropdownSelect } from '../components/SubjectSelect';
 
 interface WrongQuestionsViewProps {
@@ -16,7 +16,7 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
 }) => {
   const [statusFilter, setStatusFilter] = useState<'全部' | '未复习' | '复习中' | '已掌握'>('全部');
   const [subjectFilter, setSubjectFilter] = useState<string>('全部学科');
-  const [errorFilter, setErrorFilter] = useState<string>('全部错因');
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('全部难度');
   const [expandedIds, setExpandedIds] = useState<string[]>(['wq-1']); // default expand the first one for quick inspection
 
   const toggleExpand = (id: string) => {
@@ -28,9 +28,41 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
   const filteredList = wrongQuestions.filter((item) => {
     if (statusFilter !== '全部' && item.reviewStatus !== statusFilter) return false;
     if (subjectFilter !== '全部学科' && item.subject !== subjectFilter) return false;
-    if (errorFilter !== '全部错因' && item.errorCategory !== errorFilter) return false;
+    if (difficultyFilter !== '全部难度' && item.difficulty !== difficultyFilter) return false;
     return true;
   });
+
+  const handleExportWrongQuestions = () => {
+    if (filteredList.length === 0) return;
+
+    const protectSpreadsheetCell = (value: unknown) => {
+      const text = String(value ?? '').replace(/\r?\n/g, ' ');
+      const safeText = /^[=+\-@]/.test(text) ? `'${text}` : text;
+      return `"${safeText.replace(/"/g, '""')}"`;
+    };
+    const headers = ['序号', '学科', '知识点', '题目', '选项 A', '选项 B', '选项 C', '选项 D', '正确答案'];
+    const rows = filteredList.map((item, index) => {
+      const getOption = (key: string) => item.options?.find((option) => option.key === key)?.text || '';
+      return [
+        index + 1,
+        item.subject,
+        item.knowledgePoints?.join('、') || item.topic,
+        item.questionText,
+        getOption('A'),
+        getOption('B'),
+        getOption('C'),
+        getOption('D'),
+        item.correctAnswer,
+      ];
+    });
+    const csv = `\uFEFF${[headers, ...rows].map((row) => row.map(protectSpreadsheetCell).join(',')).join('\r\n')}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `错题导出-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="px-5 pt-4 pb-28 space-y-4 animate-fade-in">
@@ -61,21 +93,23 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
           placeholder="全部学科"
         />
 
-        {/* Error Filter */}
-        <CustomDropdownSelect
-          value={errorFilter}
-          onChange={(val) => setErrorFilter(val)}
-          options={['全部错因', ...ERROR_CATEGORIES]}
-          placeholder="全部错因"
-        />
-
         {/* Difficulty Selector */}
         <CustomDropdownSelect
-          value="全部难度"
-          onChange={() => {}}
+          value={difficultyFilter}
+          onChange={(val) => setDifficultyFilter(val)}
           options={['全部难度', '基础', '提升', '压轴']}
           placeholder="全部难度"
         />
+
+        <button
+          type="button"
+          onClick={handleExportWrongQuestions}
+          disabled={filteredList.length === 0}
+          className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-2 text-xs font-bold text-emerald-700 shadow-2xs transition-all hover:bg-emerald-100 active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+        >
+          <Download className="h-4 w-4" />
+          导出错题
+        </button>
       </div>
 
       {/* Wrong Question Cards List */}
