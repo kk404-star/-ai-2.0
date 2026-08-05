@@ -4,14 +4,10 @@ import {
   Calendar, 
   Flame, 
   CheckCircle2, 
-  Clock, 
   Target, 
-  BookOpen, 
-  Sparkles, 
   ChevronLeft, 
   ChevronRight,
   Award,
-  Check,
   Zap,
   Share2
 } from 'lucide-react';
@@ -21,6 +17,7 @@ interface CheckInCalendarModalProps {
   isOpen: boolean;
   onClose: () => void;
   student: StudentProfile;
+  onOpenReport: () => void;
 }
 
 interface DailyRecord {
@@ -152,7 +149,8 @@ const getRecordForDay = (day: number): DailyRecord => {
 export const CheckInCalendarModal: React.FC<CheckInCalendarModalProps> = ({
   isOpen,
   onClose,
-  student
+  student,
+  onOpenReport,
 }) => {
   const [selectedDay, setSelectedDay] = useState<number>(30); // Default to today (July 30)
   const [showShareToast, setShowShareToast] = useState(false);
@@ -189,7 +187,7 @@ export const CheckInCalendarModal: React.FC<CheckInCalendarModalProps> = ({
             <span className="p-1 bg-white/20 rounded-lg backdrop-blur-xs">
               <Calendar className="w-4 h-4 text-amber-300" />
             </span>
-            <h2 className="text-base font-extrabold">自学打卡日历 & 回顾</h2>
+            <h2 className="text-base font-extrabold">打卡日历与学习诊断</h2>
           </div>
 
           {/* Stats Bar */}
@@ -290,87 +288,48 @@ export const CheckInCalendarModal: React.FC<CheckInCalendarModalProps> = ({
             </div>
           </div>
 
-          {/* Selected Date Review Card (学习回顾详情) */}
-          <div className="bg-slate-50/90 rounded-2xl p-3 border border-slate-200/80 space-y-2.5">
-            {/* Review Title */}
-            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-extrabold text-slate-800">
-                  7 月 {selectedDay} 日 学习回顾
-                </span>
-                {selectedDay === 30 && (
-                  <span className="text-[9px] font-extrabold bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded">
-                    今天
-                  </span>
-                )}
-              </div>
-
-              {activeRecord.checkedIn ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                  <Check className="w-3 h-3" /> 已完成打卡
-                </span>
-              ) : (
-                <span className="text-[10px] font-medium text-slate-400 bg-slate-200/60 px-2 py-0.5 rounded-full">
-                  未打卡
-                </span>
-              )}
-            </div>
-
-            {activeRecord.checkedIn ? (
-              <>
-                {/* 3 Stats Grid */}
-                <div className="grid grid-cols-3 gap-1.5 text-center bg-white p-2.5 rounded-xl border border-slate-200/60 shadow-2xs">
-                  <div>
-                    <span className="text-[9px] text-slate-400 font-medium block">学习时间</span>
-                    <span className="text-xs font-black text-slate-800 mt-0.5 block">{activeRecord.studyMinutes}分钟</span>
+          {/* Daily diagnostic summary */}
+          {activeRecord.checkedIn && (
+                <div className="rounded-2xl border border-blue-200/70 bg-blue-50/70 p-3 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-900">
+                      <Target className="h-3.5 w-3.5 text-blue-600" />
+                      <span>学习诊断</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenReport();
+                      }}
+                      className="flex items-center gap-0.5 text-[10px] font-bold text-blue-700 transition-colors hover:text-blue-900"
+                    >
+                      查看完整报告
+                      <ChevronRight className="h-3 w-3" />
+                    </button>
                   </div>
-                  <div>
-                    <span className="text-[9px] text-slate-400 font-medium block">完成题数</span>
-                    <span className="text-xs font-black text-slate-800 mt-0.5 block">{activeRecord.questionsCount}题</span>
-                  </div>
-                  <div>
-                    <span className="text-[9px] text-slate-400 font-medium block">正确率</span>
-                    <span className="text-xs font-black text-emerald-600 mt-0.5 block">{activeRecord.accuracy}%</span>
-                  </div>
-                </div>
-
-                {/* Topics Mastered */}
-                <div className="space-y-1">
-                  <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                    <BookOpen className="w-3 h-3 text-emerald-600" />
-                    攻克知识点
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {activeRecord.topics.map((t, idx) => (
-                      <span key={idx} className="text-[11px] bg-white text-slate-700 border border-slate-200 px-2 py-0.5 rounded-lg font-medium shadow-2xs">
-                        {t}
+                  <div className="grid grid-cols-3 gap-1.5 text-center">
+                    <div className="rounded-lg bg-white/90 px-1.5 py-2 border border-blue-100">
+                      <span className="block text-[9px] font-medium text-slate-400">学习表现</span>
+                      <span className={`mt-0.5 block text-[11px] font-black ${activeRecord.accuracy >= 85 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        {activeRecord.accuracy >= 85 ? '表现稳定' : '需要巩固'}
                       </span>
-                    ))}
+                    </div>
+                    <div className="rounded-lg bg-white/90 px-1.5 py-2 border border-blue-100">
+                      <span className="block text-[9px] font-medium text-slate-400">今日错题</span>
+                      <span className="mt-0.5 block text-[11px] font-black text-rose-500">
+                        {Math.round(activeRecord.questionsCount * (100 - activeRecord.accuracy) / 100)} 题
+                      </span>
+                    </div>
+                    <div className="rounded-lg bg-white/90 px-1.5 py-2 border border-blue-100">
+                      <span className="block text-[9px] font-medium text-slate-400">诊断重点</span>
+                      <span className="mt-0.5 block truncate text-[11px] font-black text-blue-700">
+                        {activeRecord.topics[0] || '保持节奏'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-
-                {/* AI Tutor Daily Review */}
-                <div className="bg-emerald-50/90 rounded-xl p-2.5 border border-emerald-200/60 flex items-start gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <span className="text-[11px] font-extrabold text-emerald-900 block">开窍 AI 导师点评</span>
-                    <p className="text-[11px] text-emerald-800 leading-relaxed font-medium">
-                      {activeRecord.aiComment}
-                    </p>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-4 space-y-1.5">
-                <div className="w-10 h-10 rounded-full bg-slate-200/60 mx-auto flex items-center justify-center text-slate-400">
-                  <Clock className="w-5 h-5" />
-                </div>
-                <p className="text-xs text-slate-500 font-medium">该天暂无打卡记录，坚持每日练习吧！</p>
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Bottom Actions */}
           <div className="flex items-center gap-2 pt-1 pb-1">

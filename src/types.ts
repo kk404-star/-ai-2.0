@@ -8,7 +8,8 @@ export type ScreenType =
   | 'instant_learning' 
   | 'practice_quiz' 
   | 'diagnostic_report' 
-  | 'parent_binding';
+  | 'parent_binding'
+  | 'profile_details';
 
 export type SubjectType = '数学' | '物理' | '化学' | '生物' | '英语' | '语文' | '历史' | '地理' | '政治';
 
@@ -65,6 +66,7 @@ export interface StudentProfile {
   // Dual binding code system (孩子专属学生码 + 家长绑定邀请码)
   studentCode: string;             // 孩子专属学生识别码 (例如 STU-6608-2026)
   parentBindingCode: string;       // 家长绑定邀请码 (例如 PAR-8829-9123)
+  activatedAuthorizationCode?: string;
   
   isParentBound: boolean;
   parentName?: string;

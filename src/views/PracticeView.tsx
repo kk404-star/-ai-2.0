@@ -17,7 +17,7 @@ import {
   LayoutGrid,
   FileCheck
 } from 'lucide-react';
-import { QuizQuestion, ScreenType, QuestionType, WrongQuestion } from '../types';
+import { QuizQuestion, ScreenType, QuestionType, WrongQuestion, SubjectType } from '../types';
 import { sampleQuestionsList } from '../data/initialData';
 
 interface PracticeViewProps {
@@ -25,8 +25,12 @@ interface PracticeViewProps {
   knowledgePointTitle?: string | null;
   wrongQuestions?: WrongQuestion[];
   questionBank?: QuizQuestion[];
+  learnedKnowledgePointTitles?: string[];
+  currentSubject?: SubjectType;
+  questionBankOnly?: boolean;
   onNavigateToScreen: (screen: ScreenType) => void;
   onCompleteQuiz?: (completedQuestionIds: string[]) => void;
+  onQuestionCompleted?: (questionId: string) => void;
 }
 
 export const PracticeView: React.FC<PracticeViewProps> = ({
@@ -34,19 +38,15 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   knowledgePointTitle,
   wrongQuestions = [],
   questionBank = sampleQuestionsList,
+  learnedKnowledgePointTitles = [],
+  currentSubject,
+  questionBankOnly = false,
   onNavigateToScreen,
   onCompleteQuiz,
+  onQuestionCompleted,
 }) => {
   const questions = useMemo<QuizQuestion[]>(() => {
-    if (!knowledgePointTitle) return questionBank;
-
-    const matchedWrongQuestions = wrongQuestions.filter((item) =>
-      (item.knowledgePoints?.length ? item.knowledgePoints : [item.topic]).includes(knowledgePointTitle)
-    );
-
-    if (matchedWrongQuestions.length === 0) return questionBank;
-
-    return matchedWrongQuestions.map((item, index) => {
+    const toWrongQuestion = (item: WrongQuestion, index: number, total: number): QuizQuestion => {
       const correctOptionKey = item.options
         ? item.correctAnswer.match(/^([A-D])(?:[.\s、]|$)/)?.[1]
         : undefined;
@@ -54,22 +54,67 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
       return {
         id: `wrong-practice-${item.id}`,
         questionNumber: index + 1,
-        totalQuestions: matchedWrongQuestions.length,
+        totalQuestions: total,
         subject: item.subject,
         difficulty: item.difficulty,
         difficultyLabel: `${item.difficulty}错题`,
         questionType: item.options ? '选择题' : '解答题',
-        knowledgePoint: knowledgePointTitle,
+        knowledgePoint: item.knowledgePoints?.[0] || item.topic,
         questionText: item.questionText,
         options: item.options,
         correctOptionKey,
         sampleFinalAnswer: item.correctAnswer,
         sampleStepSolution: item.steps,
-        aiHint: `这是你在【${knowledgePointTitle}】下的历史错题。先独立重做，再对照解析找出原错因。`,
+        aiHint: `这是你的历史错题。先独立重做，再对照解析找出原错因。`,
         practiceStatus: item.reviewStatus === '已掌握' ? '已练习' : '未练习',
       };
+    };
+
+    if (!knowledgePointTitle) {
+      const normalize = (value: string) => value.replace(/[\s的与及·、（）()Δ]/g, '').toLowerCase();
+      const isLearnedKnowledge = (questionTitle: string) => {
+        const normalizedQuestion = normalize(questionTitle);
+        return learnedKnowledgePointTitles.some((title) => {
+          const normalizedLearned = normalize(title);
+          if (normalizedQuestion.includes(normalizedLearned) || normalizedLearned.includes(normalizedQuestion)) return true;
+          const bigrams = Array.from({ length: Math.max(0, normalizedQuestion.length - 1) }, (_, index) => normalizedQuestion.slice(index, index + 2));
+          return bigrams.filter((gram) => normalizedLearned.includes(gram)).length >= 2;
+        });
+      };
+
+      const wrongPool = wrongQuestions.filter((item) => !currentSubject || item.subject === currentSubject);
+      const learnedBankPool = questionBank.filter((item) =>
+        (!currentSubject || item.subject === currentSubject) && isLearnedKnowledge(item.knowledgePoint)
+      );
+      const selectedWrong = wrongPool.slice(0, 2);
+      const selectedBank = learnedBankPool.slice(0, Math.max(0, 5 - selectedWrong.length));
+      const remainingWrong = wrongPool.slice(selectedWrong.length, selectedWrong.length + Math.max(0, 5 - selectedWrong.length - selectedBank.length));
+      const total = selectedWrong.length + selectedBank.length + remainingWrong.length;
+      const wrongQuizQuestions = [...selectedWrong, ...remainingWrong].map((item, index) => toWrongQuestion(item, index, total));
+      return [...wrongQuizQuestions, ...selectedBank].map((item, index) => ({ ...item, questionNumber: index + 1, totalQuestions: total }));
+    }
+
+    const matchedWrongQuestions = wrongQuestions.filter((item) =>
+      (item.knowledgePoints?.length ? item.knowledgePoints : [item.topic]).includes(knowledgePointTitle)
+    );
+
+    const normalize = (value: string) => value.replace(/[\s的与及·、（）()Δ]/g, '').toLowerCase();
+    const selectedTitle = normalize(knowledgePointTitle);
+    const matchedBankQuestions = questionBank.filter((item) => {
+      const questionTitle = normalize(item.knowledgePoint);
+      if (questionTitle.includes(selectedTitle) || selectedTitle.includes(questionTitle)) return true;
+      const bigrams = Array.from({ length: Math.max(0, questionTitle.length - 1) }, (_, index) => questionTitle.slice(index, index + 2));
+      return bigrams.filter((gram) => selectedTitle.includes(gram)).length >= 2;
     });
-  }, [knowledgePointTitle, questionBank, wrongQuestions]);
+
+    if (questionBankOnly) {
+      return matchedBankQuestions.map((item, index) => ({ ...item, questionNumber: index + 1, totalQuestions: matchedBankQuestions.length }));
+    }
+
+    if (matchedWrongQuestions.length === 0) return matchedBankQuestions;
+
+    return matchedWrongQuestions.map((item, index) => toWrongQuestion(item, index, matchedWrongQuestions.length));
+  }, [currentSubject, knowledgePointTitle, learnedKnowledgePointTitles, questionBank, questionBankOnly, wrongQuestions]);
 
   const [activeQuestionIndex, setActiveQuestionIndex] = useState<number>(0);
   const currentQuestion = questions[activeQuestionIndex] || initialQuestion;
@@ -137,6 +182,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   const handleSubmit = () => {
     setIsSubmitted(true);
     setAnsweredQuestions((prev) => ({ ...prev, [activeQuestionIndex]: true }));
+    onQuestionCompleted?.(currentQuestion.id);
   };
 
   const jumpToQuestion = (idx: number) => {

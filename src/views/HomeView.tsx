@@ -10,8 +10,7 @@ import {
   Calendar,
   Clock,
   Target,
-  CheckCircle2,
-  BookOpenCheck
+  CheckCircle2
 } from 'lucide-react';
 import { StudentProfile, TaskItem, ScreenType, SubjectType, WrongQuestion } from '../types';
 import { CheckInCalendarModal } from '../components/CheckInCalendarModal';
@@ -21,12 +20,12 @@ interface HomeViewProps {
   student: StudentProfile;
   tasks: TaskItem[];
   wrongQuestions?: WrongQuestion[];
-  todayReviewQuestions?: WrongQuestion[];
+  todayTaskCompleted: number;
+  todayTaskTotal: number;
   onNavigateToScreen: (screen: ScreenType) => void;
   onOpenReport: () => void;
   onSubjectChange?: (subject: SubjectType) => void;
   onSelectKnowledgePointForPractice?: (title: string) => void;
-  onSelectWrongItemForInstantLearning?: (item: WrongQuestion) => void;
 }
 
 const SUBJECTS: SubjectType[] = ['数学', '物理', '化学', '生物', '英语', '语文', '历史', '地理', '政治'];
@@ -35,12 +34,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
   student,
   tasks,
   wrongQuestions = [],
-  todayReviewQuestions = [],
+  todayTaskCompleted,
+  todayTaskTotal,
   onNavigateToScreen,
   onOpenReport,
   onSubjectChange,
   onSelectKnowledgePointForPractice,
-  onSelectWrongItemForInstantLearning,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const robotAvatarRef = useRef<HTMLDivElement>(null);
@@ -213,11 +212,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <span>今日任务</span>
           </div>
           <div className="my-1">
-            <span className="text-xl font-black text-emerald-600">6</span>
-            <span className="text-xs text-slate-400 font-bold ml-0.5">/8</span>
+            <span className="text-xl font-black text-emerald-600">{todayTaskCompleted}</span>
+            <span className="text-xs text-slate-400 font-bold ml-0.5">/{todayTaskTotal}</span>
           </div>
           <div className="text-[10px] font-medium text-slate-400">
-            完成 75%
+            完成 {todayTaskTotal > 0 ? Math.round(todayTaskCompleted / todayTaskTotal * 100) : 0}%
           </div>
         </div>
 
@@ -252,46 +251,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* Today's scheduled wrong-question review */}
-      <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50 p-3.5 shadow-2xs">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
-              <BookOpenCheck className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h3 className="text-sm font-extrabold text-slate-900">今日错题复习</h3>
-                {todayReviewQuestions.length > 0 && (
-                  <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                    {todayReviewQuestions.length} 题
-                  </span>
-                )}
-              </div>
-              <p className="mt-0.5 text-xs font-medium text-slate-500">
-                {todayReviewQuestions.length > 0 ? '约 10 分钟，先重做原题再完成变式' : '今天没有到期错题，继续保持'}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            disabled={todayReviewQuestions.length === 0}
-            onClick={() => {
-              const first = todayReviewQuestions[0];
-              if (!first) return;
-              onSelectWrongItemForInstantLearning?.(first);
-              onNavigateToScreen('instant_learning');
-            }}
-            className={`shrink-0 rounded-xl px-3 py-2 text-xs font-bold transition-all ${todayReviewQuestions.length > 0
-              ? 'bg-amber-500 text-white shadow-xs hover:bg-amber-600 active:scale-95'
-              : 'bg-white/70 text-slate-400'}`}
-          >
-            {todayReviewQuestions.length > 0 ? '开始复习' : '已完成'}
-          </button>
-        </div>
-      </div>
-
-      {/* AI Smart Quiz Card (AI 智能抽题) */}
+      {/* Today's learning task */}
       <div 
         onClick={() => {
           onSelectKnowledgePointForPractice?.('');
@@ -305,16 +265,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <h3 className="text-sm font-extrabold text-slate-900">
-                AI 智能抽题
-              </h3>
-              <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-200/80">
-                个性推荐
-              </span>
-            </div>
+            <h3 className="text-sm font-extrabold text-slate-900">今日任务</h3>
             <p className="text-xs text-slate-500 font-medium line-clamp-1">
-              基于你的掌握度，自动生成 5 题随堂测验
+              从错题本和已学知识点题库智能抽取 {todayTaskTotal} 题
             </p>
           </div>
         </div>
@@ -328,7 +281,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           }}
           className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-2 rounded-xl transition-all active:scale-95 shrink-0 flex items-center gap-0.5 shadow-xs"
         >
-          <span>立即开始</span>
+          <span>进入任务</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -416,6 +369,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         student={student}
+        onOpenReport={onOpenReport}
       />
     </div>
   );

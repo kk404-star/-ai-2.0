@@ -1,22 +1,33 @@
 import React, { useState } from 'react';
-import { Camera, ChevronDown, ChevronUp, CheckCircle2, HelpCircle, FileText, XCircle, Sparkles, Download } from 'lucide-react';
-import { WrongQuestion, ScreenType } from '../types';
+import { Camera, ChevronDown, ChevronUp, CheckCircle2, HelpCircle, FileText, XCircle, Sparkles, Download, BookOpen, Play } from 'lucide-react';
+import { WrongQuestion, ScreenType, QuizQuestion, SubjectType } from '../types';
 import { CustomDropdownSelect } from '../components/SubjectSelect';
 
 interface WrongQuestionsViewProps {
   wrongQuestions: WrongQuestion[];
+  questionBank: QuizQuestion[];
+  currentSubject: SubjectType;
+  selectedKnowledgePointTitle?: string | null;
+  workspaceMode: 'wrong' | 'bank';
+  onWorkspaceModeChange: (mode: 'wrong' | 'bank') => void;
   onNavigateToScreen: (screen: ScreenType) => void;
   onSelectWrongItemForInstantLearning?: (item: WrongQuestion) => void;
+  onStartQuestionBankPractice: () => void;
 }
 
 export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
   wrongQuestions,
+  questionBank,
+  currentSubject,
+  selectedKnowledgePointTitle,
+  workspaceMode,
+  onWorkspaceModeChange,
   onNavigateToScreen,
   onSelectWrongItemForInstantLearning,
+  onStartQuestionBankPractice,
 }) => {
   const [statusFilter, setStatusFilter] = useState<'全部' | '未复习' | '复习中' | '已掌握'>('全部');
   const [subjectFilter, setSubjectFilter] = useState<string>('全部学科');
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('全部难度');
   const [expandedIds, setExpandedIds] = useState<string[]>(['wq-1']); // default expand the first one for quick inspection
 
   const toggleExpand = (id: string) => {
@@ -28,9 +39,82 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
   const filteredList = wrongQuestions.filter((item) => {
     if (statusFilter !== '全部' && item.reviewStatus !== statusFilter) return false;
     if (subjectFilter !== '全部学科' && item.subject !== subjectFilter) return false;
-    if (difficultyFilter !== '全部难度' && item.difficulty !== difficultyFilter) return false;
     return true;
   });
+
+  const normalizeTitle = (value: string) => value.replace(/[\s的与及·、（）()Δ]/g, '').toLowerCase();
+  const bankQuestions = questionBank.filter((item) => {
+    if (item.subject !== currentSubject) return false;
+    if (!selectedKnowledgePointTitle) return true;
+    const questionTitle = normalizeTitle(item.knowledgePoint);
+    const selectedTitle = normalizeTitle(selectedKnowledgePointTitle);
+    if (questionTitle.includes(selectedTitle) || selectedTitle.includes(questionTitle)) return true;
+    const bigrams = Array.from({ length: Math.max(0, questionTitle.length - 1) }, (_, index) => questionTitle.slice(index, index + 2));
+    return bigrams.filter((gram) => selectedTitle.includes(gram)).length >= 2;
+  });
+
+  const workspaceSwitcher = (
+    <div className="grid grid-cols-2 rounded-xl bg-slate-100 p-1">
+      <button
+        type="button"
+        onClick={() => onWorkspaceModeChange('wrong')}
+        className={`rounded-lg py-2 text-xs font-bold transition-all ${workspaceMode === 'wrong' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+      >
+        错题
+      </button>
+      <button
+        type="button"
+        onClick={() => onWorkspaceModeChange('bank')}
+        className={`rounded-lg py-2 text-xs font-bold transition-all ${workspaceMode === 'bank' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+      >
+        题库练习
+      </button>
+    </div>
+  );
+
+  if (workspaceMode === 'bank') {
+    return (
+      <div className="space-y-4 px-5 pb-28 pt-4 animate-fade-in">
+        {workspaceSwitcher}
+        <div className="rounded-2xl border border-emerald-200/70 bg-emerald-50/70 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold text-emerald-600">当前题库</p>
+              <h2 className="mt-1 truncate text-sm font-extrabold text-slate-900">{selectedKnowledgePointTitle || `${currentSubject}已学知识点`}</h2>
+              <p className="mt-1 text-xs text-slate-500">共匹配 {bankQuestions.length} 道题</p>
+            </div>
+            <button
+              type="button"
+              disabled={bankQuestions.length === 0}
+              onClick={onStartQuestionBankPractice}
+              className="flex shrink-0 items-center gap-1 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-95 disabled:bg-slate-200 disabled:text-slate-400"
+            >
+              <Play className="h-3.5 w-3.5 fill-current" />开始练习
+            </button>
+          </div>
+        </div>
+        <div className="space-y-2.5">
+          {bankQuestions.map((question, index) => (
+            <div key={question.id} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700"><BookOpen className="h-3.5 w-3.5" />第 {index + 1} 题</span>
+                <span className="text-[10px] font-medium text-slate-400">{question.difficulty}</span>
+              </div>
+              <p className="mt-2 line-clamp-2 text-xs font-bold leading-relaxed text-slate-900">{question.questionText}</p>
+              <p className="mt-2 truncate text-[10px] font-medium text-slate-400">考点：{question.knowledgePoint}</p>
+            </div>
+          ))}
+          {bankQuestions.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center">
+              <BookOpen className="mx-auto h-9 w-9 text-slate-300" />
+              <p className="mt-2 text-sm font-bold text-slate-700">该知识点暂无匹配题目</p>
+              <p className="mt-1 text-xs text-slate-400">可以返回知识点继续学习</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const handleExportWrongQuestions = () => {
     if (filteredList.length === 0) return;
@@ -66,6 +150,7 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
 
   return (
     <div className="px-5 pt-4 pb-28 space-y-4 animate-fade-in">
+      {workspaceSwitcher}
       {/* Top Status Filter Chips */}
       <div className="flex gap-2 overflow-x-auto hide-scrollbar py-1">
         {(['全部', '未复习', '复习中', '已掌握'] as const).map((st) => (
@@ -84,7 +169,7 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
       </div>
 
       {/* Dropdown Selectors */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         {/* Subject Filter */}
         <CustomDropdownSelect
           value={subjectFilter}
@@ -93,22 +178,15 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
           placeholder="全部学科"
         />
 
-        {/* Difficulty Selector */}
-        <CustomDropdownSelect
-          value={difficultyFilter}
-          onChange={(val) => setDifficultyFilter(val)}
-          options={['全部难度', '基础', '提升', '压轴']}
-          placeholder="全部难度"
-        />
-
         <button
           type="button"
           onClick={handleExportWrongQuestions}
           disabled={filteredList.length === 0}
-          className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-2 text-xs font-bold text-emerald-700 shadow-2xs transition-all hover:bg-emerald-100 active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+          title="导出当前筛选结果"
+          className="flex h-9 items-center justify-center gap-1 rounded-xl border border-emerald-300 bg-white px-3 text-xs font-bold text-emerald-700 shadow-2xs transition-all hover:border-emerald-400 hover:bg-emerald-50 active:scale-95 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400"
         >
-          <Download className="h-4 w-4" />
-          导出错题
+          <Download className="h-3.5 w-3.5" />
+          导出
         </button>
       </div>
 
@@ -127,13 +205,14 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl p-4 card-shadow border border-slate-200/80 hover:border-emerald-300 transition-all space-y-3"
+                onClick={() => {
+                  onSelectWrongItemForInstantLearning?.(item);
+                  onNavigateToScreen('instant_learning');
+                }}
+                className="cursor-pointer bg-white rounded-2xl p-4 card-shadow border border-slate-200/80 hover:border-emerald-300 transition-all space-y-3"
               >
-                {/* Card Header (Clickable to toggle) */}
-                <div
-                  onClick={() => toggleExpand(item.id)}
-                  className="cursor-pointer space-y-2 select-none"
-                >
+                {/* Card Header */}
+                <div className="space-y-2 select-none">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span
@@ -157,11 +236,21 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
                         {item.reviewStatus}
                       </span>
                       <span className="text-xs font-mono text-slate-400">{item.date}</span>
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-slate-400" />
-                      )}
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleExpand(item.id);
+                        }}
+                        aria-label={isExpanded ? '收起错题详情' : '展开错题详情'}
+                        className="rounded-full p-1 transition-colors hover:bg-slate-100"
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-emerald-600" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                        )}
+                      </button>
                     </div>
                   </div>
 
@@ -171,11 +260,10 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
                   </p>
 
                   {!isExpanded && (
-                    <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center pt-1">
                       <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-0.5">
                         考点：{item.knowledgePoints?.join('、') || item.topic} ▾
                       </span>
-                      <span className="text-[10px] text-slate-400 font-medium">{item.difficulty}题</span>
                     </div>
                   )}
                 </div>
@@ -185,29 +273,29 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
                   <div className="pt-3 border-t border-slate-100 space-y-3.5 animate-fade-in">
                     {/* Options for Choice Questions (Vertical Single Column when Expanded) */}
                     {item.options && item.options.length > 0 && (
-                      <div className="space-y-2">
+                      <div>
                         <span className="text-[11px] font-bold text-slate-500 block mb-1">题目选项：</span>
-                        <div className="flex flex-col space-y-2">
+                        <div className="flex flex-col divide-y divide-slate-100">
                           {item.options.map((opt) => {
                             const isCorrect = item.correctAnswer.startsWith(opt.key) || item.correctAnswer.includes(opt.key);
                             const isUser = item.userAnswer.startsWith(opt.key) || item.userAnswer.includes(opt.key);
                             return (
                               <div
                                 key={opt.key}
-                                className={`px-3.5 py-2.5 rounded-xl text-xs flex items-center gap-3 border transition-all ${
+                                className={`flex items-center gap-3 px-1 py-2.5 text-xs ${
                                   isCorrect
-                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-semibold'
+                                    ? 'text-emerald-800 font-semibold'
                                     : isUser
-                                    ? 'bg-rose-50 border-rose-300 text-rose-950 font-semibold'
-                                    : 'bg-slate-50 border-slate-200/80 text-slate-700'
+                                    ? 'text-rose-700 font-semibold'
+                                    : 'text-slate-700'
                                 }`}
                               >
                                 <span
                                   className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 ${
                                     isCorrect
-                                      ? 'bg-emerald-600 text-white shadow-2xs'
+                                      ? 'bg-emerald-600 text-white'
                                       : isUser
-                                      ? 'bg-rose-500 text-white shadow-2xs'
+                                      ? 'bg-rose-500 text-white'
                                       : 'bg-white border border-slate-300 text-slate-600'
                                   }`}
                                 >
@@ -233,52 +321,29 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
                     )}
 
                     {/* AI Smart Diagnosis & Step Analysis */}
-                    <div className="bg-gradient-to-br from-emerald-50/80 to-teal-50/50 p-3 rounded-xl border border-emerald-200/80 space-y-2 text-xs">
-                      <div className="flex items-center justify-between">
+                    <div className="space-y-2 border-t border-slate-100 pt-3 text-xs">
+                      <div className="flex items-center">
                         <div className="flex items-center gap-1.5 font-bold text-emerald-900">
                           <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span>AI 错因点拨与解题思路</span>
+                          <span>解析</span>
                         </div>
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
-                          AI 智能诊断
-                        </span>
                       </div>
 
-                      <div className="space-y-1.5 text-slate-700 font-medium leading-relaxed font-mono">
+                      <div className="space-y-2 text-slate-600 font-medium leading-relaxed">
                         {item.steps && item.steps.length > 0 ? (
                           item.steps.map((step, idx) => (
-                            <p key={idx} className="bg-white/90 p-2.5 rounded-lg border border-emerald-100/80 shadow-2xs">
+                            <p key={idx} className="pl-5 -indent-5">
                               {step}
                             </p>
                           ))
                         ) : (
-                          <p className="bg-white/90 p-2.5 rounded-lg border border-emerald-100/80">
+                          <p>
                             通过理解【{item.topic}】的核心推导公式，分析可知正确选项为：{item.correctAnswer}。
                           </p>
                         )}
                       </div>
                     </div>
 
-                    {/* Bottom Practice Action */}
-                    <div className="flex items-center justify-between gap-2 pt-1">
-                      <span className="text-[10px] font-medium text-slate-400">
-                        {item.reviewStatus === '已掌握' ? '两轮验证已完成' : `第 ${item.reviewStage || 1} 轮 · ${item.nextReviewAt || '待安排'}`}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            if (onSelectWrongItemForInstantLearning) {
-                              onSelectWrongItemForInstantLearning(item);
-                            }
-                            onNavigateToScreen('instant_learning');
-                          }}
-                          className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-3 py-1.5 rounded-xl transition-all active:scale-95"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                          {item.reviewStatus === '已掌握' ? '再次练习' : '复习此题'}
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>

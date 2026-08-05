@@ -15,6 +15,7 @@ import { InstantLearningView } from './views/InstantLearningView';
 import { PracticeView } from './views/PracticeView';
 import { DiagnosticReportView } from './views/DiagnosticReportView';
 import { ParentBindingView } from './views/ParentBindingView';
+import { ProfileDetailsView } from './views/ProfileDetailsView';
 
 import { 
   initialProfile, 
@@ -49,8 +50,10 @@ import {
 } from './utils/wrongReview';
 
 export default function App() {
+  const todayTaskDate = toLocalDateKey();
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [activeScreen, setActiveScreen] = useState<ScreenType>('tab');
+  const [wrongWorkspaceMode, setWrongWorkspaceMode] = useState<'wrong' | 'bank'>('wrong');
 
   const [student, setStudent] = useState<StudentProfile>(initialProfile);
   const [tasks, setTasks] = useState(initialTasks);
@@ -60,6 +63,14 @@ export default function App() {
     ...question,
     practiceStatus: index < 2 ? '已练习' as const : '未练习' as const,
   })));
+  const [completedTodayTaskIds, setCompletedTodayTaskIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(`kaiqiao-today-task-${todayTaskDate}`);
+      return new Set(saved ? JSON.parse(saved) as string[] : []);
+    } catch {
+      return new Set();
+    }
+  });
   const [wrongQuestions, setWrongQuestions] = useState<WrongQuestion[]>(() => {
     try {
       const saved = localStorage.getItem(WRONG_QUESTIONS_STORAGE_KEY);
@@ -81,6 +92,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(WRONG_QUESTIONS_STORAGE_KEY, JSON.stringify(wrongQuestions));
   }, [wrongQuestions]);
+
+  useEffect(() => {
+    localStorage.setItem(`kaiqiao-today-task-${todayTaskDate}`, JSON.stringify([...completedTodayTaskIds]));
+  }, [completedTodayTaskIds, todayTaskDate]);
 
   const learningEvidence = useMemo<LearningEvidenceBase>(() => {
     const knowledgePoints = knowledgeTree.flatMap((chapter) =>
@@ -134,6 +149,33 @@ export default function App() {
       errorCategoryCounts,
     };
   }, [knowledgeTree, wrongQuestions]);
+
+  const todayTaskProgress = useMemo(() => {
+    const learnedTitles = learningEvidence.knowledgePoints
+      .filter((point) => point.subject === student.currentSubject && (point.status === '已学习' || point.status === '已练习'))
+      .map((point) => point.title);
+    const normalize = (value: string) => value.replace(/[\s的与及·、（）()Δ]/g, '').toLowerCase();
+    const isLearnedQuestion = (questionTitle: string) => {
+      const normalizedQuestion = normalize(questionTitle);
+      return learnedTitles.some((title) => {
+        const normalizedLearned = normalize(title);
+        if (normalizedQuestion.includes(normalizedLearned) || normalizedLearned.includes(normalizedQuestion)) return true;
+        const bigrams = Array.from({ length: Math.max(0, normalizedQuestion.length - 1) }, (_, index) => normalizedQuestion.slice(index, index + 2));
+        return bigrams.filter((gram) => normalizedLearned.includes(gram)).length >= 2;
+      });
+    };
+    const wrongPool = wrongQuestions.filter((item) => item.subject === student.currentSubject);
+    const bankPool = questionBank.filter((item) => item.subject === student.currentSubject && isLearnedQuestion(item.knowledgePoint));
+    const selectedWrong = wrongPool.slice(0, 2);
+    const selectedBank = bankPool.slice(0, Math.max(0, 5 - selectedWrong.length));
+    const remainingWrong = wrongPool.slice(selectedWrong.length, selectedWrong.length + Math.max(0, 5 - selectedWrong.length - selectedBank.length));
+    return {
+      total: selectedWrong.length + selectedBank.length + remainingWrong.length,
+      completed: [...selectedWrong, ...remainingWrong]
+        .filter((item) => completedTodayTaskIds.has(`wrong-practice-${item.id}`) || item.reviewStatus === '已掌握').length
+        + selectedBank.filter((item) => completedTodayTaskIds.has(item.id) || item.practiceStatus === '已练习').length,
+    };
+  }, [completedTodayTaskIds, learningEvidence.knowledgePoints, questionBank, student.currentSubject, wrongQuestions]);
 
   useEffect(() => {
     if (activeScreen !== 'knowledge_study' || !selectedKnowledgePointCode) return;
@@ -197,9 +239,19 @@ export default function App() {
     setSelectedWrongItem(item);
   };
 
+  const openQuestionBank = (title: string, code?: string) => {
+    selectKnowledgePoint(title, code);
+    setWrongWorkspaceMode('bank');
+    setActiveScreen('tab');
+    setActiveTab('wrong');
+  };
+
   const handleCompleteQuiz = (completedQuestionIds: string[]) => {
     const completedCount = completedQuestionIds.length;
     const completedQuestionIdSet = new Set(completedQuestionIds);
+    if (completedQuestionIds.length > 0) {
+      setCompletedTodayTaskIds((current) => new Set([...current, ...completedQuestionIds]));
+    }
     const newlyPracticedBankCount = questionBank.filter((question) =>
       completedQuestionIdSet.has(question.id) && question.practiceStatus !== '已练习'
     ).length;
@@ -254,8 +306,10 @@ export default function App() {
         return '学习诊断报告';
       case 'parent_binding':
         return '家长绑定与监督';
+      case 'profile_details':
+        return '个人资料';
       default:
-        if (activeTab === 'study') return '精选题库';
+        if (activeTab === 'study') return '知识点学习';
         if (activeTab === 'wrong') return '错题本';
         if (activeTab === 'profile') return '个人中心';
         return '开窍 AI 学伴';
@@ -267,11 +321,16 @@ export default function App() {
     setStudent((prev) => ({ ...prev, currentSubject: newSubject }));
   };
 
+  const handleUpdateProfile = (changes: Pick<StudentProfile, 'name' | 'avatar' | 'school'>) => {
+    setStudent((current) => ({ ...current, ...changes }));
+  };
+
   // Code Activation (B2B 机构授权码)
   const handleActivateCode = (code: string): boolean => {
     if (code.trim().length >= 8) {
       setStudent((prev) => ({
         ...prev,
+        activatedAuthorizationCode: code.trim(),
         aiPackageExpiry: '2027-12-31',
         monthlyTokenLimit: 250000,
         monthlyTokenRemaining: prev.monthlyTokenRemaining + 100000,
@@ -398,8 +457,16 @@ export default function App() {
           knowledgePointTitle={selectedKnowledgePointTitle}
           wrongQuestions={wrongQuestions}
           questionBank={questionBank}
+          currentSubject={student.currentSubject}
+          questionBankOnly={activeTab === 'wrong' && wrongWorkspaceMode === 'bank'}
+          learnedKnowledgePointTitles={learningEvidence.knowledgePoints
+            .filter((point) => point.subject === student.currentSubject && (point.status === '已学习' || point.status === '已练习'))
+            .map((point) => point.title)}
           onNavigateToScreen={(screen) => setActiveScreen(screen)}
           onCompleteQuiz={handleCompleteQuiz}
+          onQuestionCompleted={(questionId) => {
+            setCompletedTodayTaskIds((current) => new Set([...current, questionId]));
+          }}
         />
       );
     }
@@ -432,6 +499,10 @@ export default function App() {
       );
     }
 
+    if (activeScreen === 'profile_details') {
+      return <ProfileDetailsView student={student} onSave={handleUpdateProfile} />;
+    }
+
     // Default Main Tab Views
     switch (activeTab) {
       case 'home':
@@ -440,12 +511,12 @@ export default function App() {
             student={student}
             tasks={tasks}
             wrongQuestions={wrongQuestions}
-            todayReviewQuestions={todayReviewQuestions}
+            todayTaskCompleted={todayTaskProgress.completed}
+            todayTaskTotal={todayTaskProgress.total}
             onNavigateToScreen={(screen) => setActiveScreen(screen)}
             onOpenReport={() => setActiveScreen('diagnostic_report')}
             onSubjectChange={handleSubjectChange}
             onSelectKnowledgePointForPractice={(title) => selectKnowledgePoint(title)}
-            onSelectWrongItemForInstantLearning={selectWrongQuestion}
           />
         );
 
@@ -459,6 +530,7 @@ export default function App() {
             onSubjectChange={handleSubjectChange}
             onNavigateToScreen={(screen) => setActiveScreen(screen)}
             onSelectKnowledgePointForPractice={selectKnowledgePoint}
+            onOpenQuestionBank={openQuestionBank}
           />
         );
 
@@ -466,8 +538,14 @@ export default function App() {
         return (
           <WrongQuestionsView
             wrongQuestions={wrongQuestions}
+            questionBank={questionBank}
+            currentSubject={student.currentSubject}
+            selectedKnowledgePointTitle={selectedKnowledgePointTitle}
+            workspaceMode={wrongWorkspaceMode}
+            onWorkspaceModeChange={setWrongWorkspaceMode}
             onNavigateToScreen={(screen) => setActiveScreen(screen)}
             onSelectWrongItemForInstantLearning={selectWrongQuestion}
+            onStartQuestionBankPractice={() => setActiveScreen('practice')}
           />
         );
 
@@ -493,7 +571,6 @@ export default function App() {
         currentScreen={activeScreen}
         screenTitle={getScreenTitle()}
         onBack={() => setActiveScreen('tab')}
-        onOpenReport={() => setActiveScreen('diagnostic_report')}
       />
 
       {/* Main View Area */}

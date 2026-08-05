@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, BookOpenCheck, CheckCircle2, Home, Sparkles, XCircle } from 'lucide-react';
+import { BookOpenCheck, CheckCircle2, Home, Sparkles, XCircle } from 'lucide-react';
 import { ScreenType, SubjectType, WrongQuestion } from '../types';
 
 interface InstantLearningViewProps {
@@ -87,20 +87,6 @@ export const InstantLearningView: React.FC<InstantLearningViewProps> = ({
 
   return (
     <div className="space-y-4 px-5 pb-32 pt-4 animate-fade-in">
-      <button onClick={() => onNavigateToScreen('tab')} className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 card-shadow">
-        <ArrowLeft className="h-4 w-4 text-emerald-600" />返回上一页
-      </button>
-
-      <div className="rounded-2xl bg-gradient-to-br from-emerald-700 via-emerald-800 to-teal-900 p-4 text-white shadow-md">
-        <div className="flex items-center justify-between gap-2">
-          <span className="rounded-lg bg-white/20 px-2.5 py-0.5 text-[11px] font-bold">{wrongItem.subject} · 第 {wrongItem.reviewStage || 1} 轮</span>
-          <span className="rounded-lg bg-rose-500/90 px-2.5 py-0.5 text-[10px] font-bold">错因：{wrongItem.errorCategory}</span>
-        </div>
-        <p className="mt-3 text-xs font-medium leading-relaxed text-emerald-100">
-          {isDue ? '本次结果计入掌握进度：原题与变式题全部正确才算通过。' : '这是提前自由练习，本次结果会记录，但不会提前推进掌握阶段。'}
-        </p>
-      </div>
-
       <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 card-shadow">
         <h3 className="flex items-center gap-1.5 text-xs font-bold text-slate-900"><BookOpenCheck className="h-4 w-4 text-emerald-600" />1. 遮住答案，独立重做原题</h3>
         <p className="rounded-xl border border-slate-200/60 bg-slate-50 p-3 text-xs font-medium leading-relaxed text-slate-800">{wrongItem.questionText}</p>
@@ -116,7 +102,7 @@ export const InstantLearningView: React.FC<InstantLearningViewProps> = ({
       </section>
 
       <section className="space-y-3 rounded-2xl border border-amber-200 bg-white p-4 card-shadow">
-        <h3 className="flex items-center gap-1.5 text-xs font-bold text-slate-900"><Sparkles className="h-4 w-4 text-amber-500" />2. 完成同知识点变式</h3>
+        <h3 className="flex items-center gap-1.5 text-xs font-bold text-slate-900"><Sparkles className="h-4 w-4 text-amber-500" />2. 举一反三</h3>
         <p className="rounded-xl border border-amber-200/60 bg-amber-50/60 p-3 text-xs font-medium leading-relaxed text-slate-800">{variant.question}</p>
         <div className="space-y-2">{renderOptions(variant.options, variantChoice, setVariantChoice, variantResult !== null, 'amber')}</div>
         {variantResult !== null ? (

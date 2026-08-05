@@ -1,21 +1,20 @@
 import React from 'react';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { ScreenType } from '../types';
 
 interface HeaderProps {
   currentScreen: ScreenType;
   screenTitle?: string;
   onBack?: () => void;
-  onOpenReport?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentScreen,
   screenTitle,
   onBack,
-  onOpenReport,
 }) => {
   const isTabScreen = currentScreen === 'tab';
+  const resolvedTitle = screenTitle ?? '开窍 AI 学伴';
 
   return (
     <header className="sticky top-0 z-40 glass-nav flex justify-between items-center px-5 h-14 bg-white/95 border-b border-slate-100">
@@ -30,25 +29,15 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         ) : null}
 
-        <h1 className="text-base font-extrabold text-slate-900 tracking-tight">
-          {screenTitle || '开窍 AI 学伴'}
-        </h1>
+        {resolvedTitle && (
+          <h1 className="text-base font-extrabold text-slate-900 tracking-tight">
+            {resolvedTitle}
+          </h1>
+        )}
       </div>
 
-      {/* Right side: Diagnostic button, Avatar */}
+      {/* Right side: Student avatar */}
       <div className="flex items-center gap-2">
-        {/* Diagnostic Button */}
-        {isTabScreen && onOpenReport && (
-          <button
-            onClick={onOpenReport}
-            title="查看 AI 学习报告"
-            className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all active:scale-95 flex items-center gap-1 text-xs font-bold border border-emerald-200/60"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>诊断</span>
-          </button>
-        )}
-
         {/* Student Avatar - AI Robot */}
         <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-400/80 shadow-2xs flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
           <svg viewBox="0 0 120 120" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">

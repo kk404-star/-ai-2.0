@@ -11,6 +11,7 @@ interface StudyViewProps {
   onSubjectChange: (subject: SubjectType) => void;
   onNavigateToScreen: (screen: ScreenType) => void;
   onSelectKnowledgePointForPractice?: (title: string, code?: string) => void;
+  onOpenQuestionBank?: (title: string, code?: string) => void;
 }
 
 const SUBJECTS: SubjectType[] = ['数学', '物理', '化学', '生物', '英语', '语文', '历史', '地理', '政治'];
@@ -23,6 +24,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
   onSubjectChange,
   onNavigateToScreen,
   onSelectKnowledgePointForPractice,
+  onOpenQuestionBank,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -114,8 +116,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
                       <button
                         type="button"
                         onClick={() => {
-                          onSelectKnowledgePointForPractice?.(card.title, card.knowledgeCode);
-                          onNavigateToScreen('practice');
+                          onOpenQuestionBank?.(card.title, card.knowledgeCode);
                         }}
                         className="text-emerald-700 transition-colors hover:text-emerald-900"
                       >
@@ -126,8 +127,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
                     <button
                       type="button"
                       onClick={() => {
-                        onSelectKnowledgePointForPractice?.(card.title, card.knowledgeCode);
-                        onNavigateToScreen('practice');
+                        onOpenQuestionBank?.(card.title, card.knowledgeCode);
                       }}
                       className="text-[10px] font-bold text-emerald-700 transition-colors hover:text-emerald-900"
                     >
@@ -181,10 +181,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
                     onClick={() => toggleL1(chapter.code)}
                     className="p-3.5 bg-slate-50/90 hover:bg-slate-100/80 cursor-pointer flex items-center justify-between border-b border-slate-100 transition-colors"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="bg-slate-800 text-white text-[10px] font-black px-2 py-0.5 rounded-md shrink-0">
-                        章
-                      </span>
+                    <div className="flex min-w-0 items-center">
                       <h3 className="text-sm font-bold text-slate-900 truncate">{chapter.title}</h3>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -217,10 +214,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
                               onClick={() => toggleL2(sec.code)}
                               className="p-3 bg-white hover:bg-slate-50 cursor-pointer flex items-center justify-between border-b border-slate-100 transition-colors"
                             >
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span className="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0">
-                                  节
-                                </span>
+                              <div className="flex min-w-0 items-center">
                                 <h4 className="text-xs font-bold text-slate-800 truncate">
                                   {sec.title}
                                 </h4>
@@ -248,32 +242,24 @@ export const StudyView: React.FC<StudyViewProps> = ({
                                     className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs space-y-2 hover:border-emerald-400 transition-all"
                                   >
                                     <div className="flex items-start justify-between gap-2">
-                                      <div className="space-y-1">
-                                        <div className="flex items-center gap-1.5 flex-wrap">
-                                          <span className="bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-md">
-                                            知识点
-                                          </span>
+                                      <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center">
                                           <span className="text-xs font-bold text-slate-900">
                                             {point.title}
                                           </span>
                                         </div>
-                                        <p className="text-[10px] text-slate-400 font-mono">
-                                          编号: {point.code}
-                                        </p>
                                       </div>
 
-                                      {/* Mastery State Badge */}
-                                      <span
-                                        className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border shrink-0 ${
-                                          point.masteryState === '已练习'
-                                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                                            : point.masteryState === '已学习'
-                                            ? 'bg-blue-100 text-blue-800 border-blue-300'
-                                            : point.masteryState === '学习中'
-                                            ? 'bg-amber-100 text-amber-800 border-amber-300'
-                                            : 'bg-slate-100 text-slate-700 border-slate-200'
-                                        }`}
-                                      >
+                                      {/* Quiet metadata-style mastery state */}
+                                      <span className={`shrink-0 pt-0.5 font-mono text-[10px] font-semibold ${
+                                        point.masteryState === '已练习'
+                                          ? 'text-emerald-600'
+                                          : point.masteryState === '已学习'
+                                          ? 'text-blue-600'
+                                          : point.masteryState === '学习中'
+                                          ? 'text-amber-600'
+                                          : 'text-slate-400'
+                                      }`}>
                                         {point.masteryState}
                                       </span>
                                     </div>
@@ -307,10 +293,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
 
                                         <button
                                           onClick={() => {
-                                            if (onSelectKnowledgePointForPractice) {
-                                              onSelectKnowledgePointForPractice(point.title, point.code);
-                                            }
-                                            onNavigateToScreen('practice');
+                                            onOpenQuestionBank?.(point.title, point.code);
                                           }}
                                           className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg shadow-2xs transition-all active:scale-95 flex items-center gap-1"
                                         >

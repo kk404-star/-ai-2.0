@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Award, 
-  BookOpen, 
-  Settings, 
+  UserRound, 
   MessageSquare, 
   Info, 
   ChevronRight, 
@@ -44,7 +43,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [showBoosterModal, setShowBoosterModal] = useState(false);
 
   // B2B Code Activation states
-  const [inputCode, setInputCode] = useState('');
+  const [inputCode, setInputCode] = useState(student.activatedAuthorizationCode || '');
   const [codeSuccessMsg, setCodeSuccessMsg] = useState('');
   const [codeErrMsg, setCodeErrorMsg] = useState('');
 
@@ -74,7 +73,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       setCodeSuccessMsg('🎉 激活成功！已延长 AI 服务并增加月度额度');
       setTimeout(() => {
         setShowCodeModal(false);
-        setInputCode('');
+        setInputCode(inputCode.trim());
         setCodeSuccessMsg('');
       }, 1500);
     } else {
@@ -101,7 +100,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   return (
     <div className="px-5 pt-4 pb-28 space-y-4 animate-fade-in">
       {/* Student Avatar & Basic Profile Card */}
-      <div className="flex items-center gap-4 bg-white p-4.5 rounded-2xl card-shadow border border-slate-200/80">
+      <div
+        onClick={() => onNavigateToScreen('profile_details')}
+        className="flex items-center gap-4 bg-white p-4.5 rounded-2xl card-shadow border border-slate-200/80 cursor-pointer hover:bg-slate-50 transition-colors"
+      >
         <div className="relative w-14 h-14 shrink-0">
           <img
             src={student.avatar}
@@ -115,12 +117,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h2 className="text-base font-extrabold text-slate-900">{student.name}</h2>
-            <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200/60">
-              {student.studentCode}
-            </span>
-          </div>
+          <h2 className="text-base font-extrabold text-slate-900">{student.name}</h2>
           <div className="flex flex-wrap gap-1.5 mt-1.5">
             <span className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
               {student.school}
@@ -201,11 +198,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-2.5 pt-0.5">
           <button
-            onClick={() => setShowCodeModal(true)}
+            onClick={() => {
+              setInputCode(student.activatedAuthorizationCode || '');
+              setShowCodeModal(true);
+            }}
             className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-98 border border-slate-200/60"
           >
             <Key className="w-3.5 h-3.5 text-slate-600" />
-            <span>激活机构授权码</span>
+            <span>激活授权码</span>
           </button>
 
           <button
@@ -213,7 +213,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             className="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-98"
           >
             <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-            <span>充值 Token 加油包</span>
+            <span>充值加油包</span>
           </button>
         </div>
       </div>
@@ -234,10 +234,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </svg>
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-slate-900 truncate">账号绑定与身份识别码</p>
-              <p className="text-xs text-slate-500 truncate mt-0.5">
-                孩子专属码: <span className="font-mono">{student.studentCode}</span>
-              </p>
+              <p className="text-sm font-bold text-slate-900 truncate">家长绑定</p>
+              <p className="text-xs text-slate-500 truncate mt-0.5">{student.isParentBound ? `已绑定${student.parentName || '家长'}` : '绑定后可查看学习情况'}</p>
             </div>
           </div>
 
@@ -255,27 +253,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
         </div>
 
-        {/* My Subjects */}
-        <div className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer">
+        {/* Personal profile */}
+        <div
+          onClick={() => onNavigateToScreen('profile_details')}
+          className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer"
+        >
           <div className="flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-              <BookOpen className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 shrink-0">
+              <UserRound className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900">我的学科</p>
-              <p className="text-xs text-slate-500 mt-0.5">初中 9 门全科已激活</p>
+              <p className="text-sm font-bold text-slate-900">个人资料</p>
+              <p className="text-xs text-slate-500 mt-0.5">头像、昵称与学校</p>
             </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-        </div>
-
-        {/* Settings */}
-        <div className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer">
-          <div className="flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
-              <Settings className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-bold text-slate-900">学习偏好设置</p>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
         </div>
@@ -297,7 +287,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
               <Info className="w-5 h-5" />
             </div>
-            <p className="text-sm font-bold text-slate-900">关于开窍 AI</p>
+            <p className="text-sm font-bold text-slate-900">关于开窍</p>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
         </div>
@@ -316,7 +306,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <div className="flex justify-between items-center">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <Key className="w-5 h-5 text-emerald-700" />
-                激活机构 12 位授权码
+                授权码
               </h3>
               <button
                 onClick={() => setShowCodeModal(false)}
@@ -327,14 +317,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
 
             <p className="text-xs text-slate-500 leading-relaxed">
-              请输入机构/教师分配的 12 位授权码，激活后将扣减冻结点数，并延长全科服务与发放月度 Token 额度。
+              输入授权码后即可激活学习服务与额度。
             </p>
 
             <input
               type="text"
               value={inputCode}
               onChange={(e) => setInputCode(e.target.value)}
-              placeholder="请输入 12 位授权码..."
+              placeholder="请输入授权码..."
               className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono tracking-wider text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
 
