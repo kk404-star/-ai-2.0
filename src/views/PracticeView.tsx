@@ -31,6 +31,8 @@ interface PracticeViewProps {
   onNavigateToScreen: (screen: ScreenType) => void;
   onCompleteQuiz?: (completedQuestionIds: string[]) => void;
   onQuestionCompleted?: (questionId: string) => void;
+  onUnresolvedQuestion?: (question: QuizQuestion, userAnswer: string) => void;
+  onResolvedInSession?: (question: QuizQuestion, firstWrongAnswer: string) => void;
 }
 
 export const PracticeView: React.FC<PracticeViewProps> = ({
@@ -44,6 +46,8 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   onNavigateToScreen,
   onCompleteQuiz,
   onQuestionCompleted,
+  onUnresolvedQuestion,
+  onResolvedInSession,
 }) => {
   const availableQuestionBank = useMemo(
     () => [...questionBank, ...sampleQuestionsList.filter((seedQuestion) => !questionBank.some((question) => question.id === seedQuestion.id))],

@@ -163,8 +163,8 @@
 .energy-orb {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   background: radial-gradient(circle at 35% 30%, #fff 0 12%, #d1fae5 42%, #a7f3d0 70%, transparent 72%);
   filter: drop-shadow(0 8px 8px rgba(16, 185, 129, .16));
@@ -183,15 +183,15 @@
 
 .parent-family-illustration img {
   position: absolute;
-  top: -48px;
-  left: -27px;
-  width: 116px;
+  top: -42px;
+  left: -24px;
+  width: 102px;
   height: auto;
   max-width: none;
   filter: drop-shadow(0 6px 6px rgba(120, 53, 15, .12));
 }
-.menu-icon { display: grid; width: 34px; height: 34px; flex: none; place-items: center; border-radius: 11px; }
-.menu-icon svg { width: 18px; height: 18px; }
+.menu-icon { display: grid; width: 30px; height: 30px; flex: none; place-items: center; border-radius: 10px; }
+.menu-icon svg { width: 16px; height: 16px; }
 .menu-icon-green { background: #ecfdf5; color: #10b981; }
 .menu-icon-blue { background: #eff6ff; color: #3b82f6; }
 .menu-icon-violet { background: #f5f3ff; color: #7c3aed; }

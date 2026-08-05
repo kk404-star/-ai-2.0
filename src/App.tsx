@@ -36,6 +36,8 @@ import {
   StudentProfile, 
   CorrectionRecord, 
   WrongQuestion,
+  QuizQuestion,
+  ResolutionEvidence,
   LearningEvidenceBase,
   ERROR_CATEGORIES,
 } from './types';
@@ -81,6 +83,14 @@ export default function App() {
     }
   });
   const [correctionHistory, setCorrectionHistory] = useState<CorrectionRecord[]>(initialCorrectionHistory);
+  const [resolutionEvidence, setResolutionEvidence] = useState<ResolutionEvidence[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('kaiqiao-resolution-evidence-v1') || '[]') as ResolutionEvidence[];
+    } catch {
+      return [];
+    }
+  });
+  const [immediateCorrectionItem, setImmediateCorrectionItem] = useState<WrongQuestion | null>(null);
   
   const [selectedCorrection, setSelectedCorrection] = useState<CorrectionRecord>(initialCorrectionHistory[0]);
   const [selectedWrongItem, setSelectedWrongItem] = useState<WrongQuestion | null>(null);
@@ -92,6 +102,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(WRONG_QUESTIONS_STORAGE_KEY, JSON.stringify(wrongQuestions));
   }, [wrongQuestions]);
+
+  useEffect(() => {
+    localStorage.setItem('kaiqiao-resolution-evidence-v1', JSON.stringify(resolutionEvidence));
+  }, [resolutionEvidence]);
 
   useEffect(() => {
     localStorage.setItem(`kaiqiao-today-task-${todayTaskDate}`, JSON.stringify([...completedTodayTaskIds]));
@@ -348,7 +362,76 @@ export default function App() {
     }));
   };
 
-  // Add Wrong Question from Correction Detail
+  const addResolutionEvidence = (evidence: ResolutionEvidence) => {
+    setResolutionEvidence((items) => [evidence, ...items.filter((item) => item.sourceQuestionId !== evidence.sourceQuestionId)]);
+  };
+
+  const createPendingWrongQuestion = (question: QuizQuestion, userAnswer: string, reason: WrongQuestion['errorCategory'] | '其他：错因不明' = '其他：错因不明'): WrongQuestion => {
+    const today = toLocalDateKey();
+    return {
+      id: `wq-${Date.now()}`,
+      subject: question.subject,
+      topic: question.knowledgePoint,
+      date: today,
+      questionText: question.questionText,
+      userAnswer,
+      correctAnswer: question.correctOptionKey || question.sampleFinalAnswer || '请查看标准答案',
+      errorCategory: reason === '其他：错因不明' ? '概念没理解' : reason,
+      difficulty: question.difficulty,
+      tags: [reason, '待修复'],
+      reviewStatus: '未复习',
+      addedAt: today,
+      nextReviewAt: addDays(today, 1),
+      reviewStage: 1,
+      reviewFailureCount: 0,
+      reviewAttempts: [],
+      steps: question.sampleStepSolution,
+      knowledgePoints: [question.knowledgePoint],
+      options: question.options,
+      sourceType: '系统内练习',
+      sourceQuestionId: question.id,
+      evaluationRule: question.questionType === '选择题' ? '按标准选项判定' : '按标准答案或评价规则判定',
+      errorReasonTrace: { finalReason: reason, source: '系统兜底' },
+      firstErrorEvidence: { firstWrongAnswer: userAnswer, assistanceEvidence: ['已展示解析', '已提供撤除提示后的重做入口'], createdAt: today },
+      repairUnitId: `${question.subject}-${question.knowledgePoint}`,
+    };
+  };
+
+  const handleUnresolvedPracticeQuestion = (question: QuizQuestion, userAnswer: string) => {
+    if (wrongQuestions.some((item) => item.sourceQuestionId === question.id)) return;
+    const pending = createPendingWrongQuestion(question, userAnswer);
+    setWrongQuestions((items) => [pending, ...items]);
+    addResolutionEvidence({
+      id: `evidence-${Date.now()}`,
+      sourceQuestionId: question.id,
+      sourceType: '系统内练习',
+      subject: question.subject,
+      questionText: question.questionText,
+      firstWrongAnswer: userAnswer,
+      correctAnswer: pending.correctAnswer,
+      assistanceEvidence: pending.firstErrorEvidence?.assistanceEvidence || [],
+      status: '待修复',
+      createdAt: toLocalDateKey(),
+    });
+  };
+
+  const handleResolvedPracticeQuestion = (question: QuizQuestion, firstWrongAnswer: string) => {
+    addResolutionEvidence({
+      id: `evidence-${Date.now()}`,
+      sourceQuestionId: question.id,
+      sourceType: '系统内练习',
+      subject: question.subject,
+      questionText: question.questionText,
+      firstWrongAnswer,
+      correctAnswer: question.correctOptionKey || question.sampleFinalAnswer || '已通过评价规则',
+      assistanceEvidence: ['已展示解析', '撤除提示后独立重做通过'],
+      status: '已当场解决',
+      resolvedAt: toLocalDateKey(),
+      createdAt: toLocalDateKey(),
+    });
+  };
+
+  // 拍照批改的题目由学生明确选择“稍后修复”后才进入待修复队列。
   const handleAddToWrongQuestions = (record: CorrectionRecord, errorCategory: CorrectionRecord['errorCategory']): boolean => {
     if (wrongQuestions.some((item) => item.sourceCorrectionId === record.id)) return false;
     const today = toLocalDateKey();
@@ -372,9 +455,16 @@ export default function App() {
       reviewAttempts: [],
       steps: record.steps,
       knowledgePoints: record.knowledgePoints,
+      sourceType: '拍照批改',
+      sourceQuestionId: record.id,
+      evaluationRule: '按拍照批改的标准答案判定',
+      errorReasonTrace: { finalReason: errorCategory, source: '学生自报', studentReportedReason: errorCategory, aiCandidateReason: record.errorCategory },
+      firstErrorEvidence: { firstWrongAnswer: record.userAnswer, assistanceEvidence: ['已展示错因分析', '已展示解析步骤'], createdAt: today },
+      repairUnitId: `${record.subject}-${record.knowledgePoints[0] || record.title}`,
     };
 
     setWrongQuestions((prev) => [newWrong, ...prev]);
+    addResolutionEvidence({ id: `evidence-${Date.now()}`, sourceQuestionId: record.id, sourceType: '拍照批改', subject: record.subject, questionText: record.questionText, firstWrongAnswer: record.userAnswer, correctAnswer: record.correctAnswer, assistanceEvidence: ['已展示错因分析', '学生选择稍后修复'], status: '待修复', createdAt: today });
     return true;
   };
 
@@ -472,6 +562,8 @@ export default function App() {
           onQuestionCompleted={(questionId) => {
             setCompletedTodayTaskIds((current) => new Set([...current, questionId]));
           }}
+          onUnresolvedQuestion={handleUnresolvedPracticeQuestion}
+          onResolvedInSession={handleResolvedPracticeQuestion}
         />
       );
     }
@@ -545,7 +637,13 @@ export default function App() {
             currentSubject={student.currentSubject}
             selectedKnowledgePointTitle={selectedKnowledgePointTitle}
             workspaceMode={wrongWorkspaceMode}
-            onWorkspaceModeChange={setWrongWorkspaceMode}
+            onWorkspaceModeChange={(mode) => {
+              setWrongWorkspaceMode(mode);
+              if (mode === 'bank') {
+                setSelectedKnowledgePointTitle(null);
+                setSelectedKnowledgePointCode(null);
+              }
+            }}
             onStartKnowledgeStudy={(title) => {
               selectKnowledgePoint(title);
               setActiveScreen('knowledge_study');

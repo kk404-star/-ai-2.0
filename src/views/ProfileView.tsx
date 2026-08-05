@@ -83,11 +83,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   return (
-    <div className="profile-page space-y-2.5 px-3.5 pt-2 pb-20 animate-fade-in">
-      <section className="profile-hero overflow-hidden rounded-[18px] border border-emerald-100 px-3 py-2.5 shadow-[0_10px_28px_-18px_rgba(5,150,105,.45)]">
-        <div className="relative z-10 flex items-center gap-3">
+    <div className="profile-page space-y-2 px-5 pt-2 pb-20 animate-fade-in">
+      <section className="profile-hero overflow-hidden rounded-2xl border border-emerald-100 px-3 py-2 shadow-[0_10px_28px_-18px_rgba(5,150,105,.45)]">
+        <div className="relative z-10 flex items-center gap-2.5">
           <button onClick={() => onNavigateToScreen('profile_details')} className="relative shrink-0 rounded-full" aria-label="编辑个人资料">
-            <span className="block size-[58px] rounded-full border-2 border-emerald-500 bg-white p-1 shadow-sm">
+            <span className="block size-[50px] rounded-full border-2 border-emerald-500 bg-white p-1 shadow-sm">
               <img src={student.avatar} alt={student.name} className="size-full rounded-full object-cover" referrerPolicy="no-referrer" />
             </span>
             <span className="absolute -bottom-0.5 -right-0.5 grid size-5 place-items-center rounded-full border-2 border-white bg-emerald-600 text-white shadow-sm">
@@ -96,11 +96,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </button>
 
           <div className="min-w-0 flex-1">
-            <h2 className="text-[18px] font-black tracking-tight text-slate-900">{student.name}</h2>
-            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+            <h2 className="text-base font-black tracking-tight text-slate-900">{student.name}</h2>
+            <p className="mt-0.5 flex items-center gap-1.5 text-[10px] font-medium text-slate-500">
               <School className="size-3 text-slate-500" />{student.school}
             </p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+            <p className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500">
               <UsersRound className="size-3 text-slate-500" />{student.className}
             </p>
           </div>
@@ -109,48 +109,48 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       </section>
 
-      <section className="rounded-[18px] border border-slate-200/80 bg-white p-3 shadow-[0_8px_24px_-16px_rgba(15,23,42,.3)]">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-2.5 shadow-[0_8px_24px_-16px_rgba(15,23,42,.3)]">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex gap-2.5">
-            <span className="grid size-7 place-items-center rounded-full bg-emerald-600 text-white shadow-[0_4px_12px_rgba(5,150,105,.28)]"><Zap className="size-4 fill-white" /></span>
-            <div><h3 className="text-[15px] font-black text-slate-900">我的学习权益</h3><p className="mt-0.5 text-[10px] text-slate-500">{student.aiPackageName}</p></div>
+          <div className="flex gap-2">
+            <span className="grid size-6 place-items-center rounded-full bg-emerald-600 text-white shadow-[0_4px_12px_rgba(5,150,105,.28)]"><Zap className="size-3.5 fill-white" /></span>
+            <div><h3 className="text-[13px] font-black text-slate-900">我的学习权益</h3><p className="text-[9px] text-slate-500">{student.aiPackageName}</p></div>
           </div>
-          <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">有效期至 {student.aiPackageExpiry}</span>
+          <span className="rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700">有效期至 {student.aiPackageExpiry}</span>
         </div>
 
-        <div className="mt-2 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/80 to-white p-2.5">
+        <div className="mt-1.5 rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/80 to-white p-2">
           <div className="flex items-start justify-between">
-            <div><p className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">剩余学习能量 <BadgeInfo className="size-3.5" /></p><p className="mt-0.5 font-mono text-[22px] font-black tracking-tight text-emerald-700">{totalTokensAvailable.toLocaleString()} <span className="font-sans text-[10px] font-medium text-slate-500">能量值</span></p></div>
-            <span className="energy-orb"><Zap className="size-7 fill-emerald-500 text-emerald-500" /></span>
+            <div><p className="flex items-center gap-1 text-[9px] font-medium text-slate-500">剩余学习能量 <BadgeInfo className="size-3" /></p><p className="font-mono text-lg font-black tracking-tight text-emerald-700">{totalTokensAvailable.toLocaleString()} <span className="font-sans text-[9px] font-medium text-slate-500">能量值</span></p></div>
+            <span className="energy-orb"><Zap className="size-5 fill-emerald-500 text-emerald-500" /></span>
           </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-emerald-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${monthlyPercent}%` }} /></div>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <div className="h-[54px] rounded-xl border border-slate-200 bg-white/90 px-2.5 py-1.5"><p className="text-[9px] text-slate-500">月度套餐额度</p><strong className="mt-0.5 block font-mono text-[14px] text-emerald-700">{(student.monthlyTokenRemaining / 1000).toFixed(0)}k <span className="text-[9px] font-normal text-slate-400">/ {(student.monthlyTokenLimit / 1000).toFixed(0)}k</span></strong></div>
-            <div className="h-[54px] rounded-xl border border-slate-200 bg-white/90 px-2.5 py-1.5"><p className="text-[9px] text-slate-500">加油包余额</p><strong className="mt-0.5 block font-mono text-[14px] text-emerald-700">{(student.boosterTokenRemaining / 1000).toFixed(0)}k <span className="font-sans text-[8px] font-normal text-slate-400">（永久有效）</span></strong></div>
+          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-emerald-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${monthlyPercent}%` }} /></div>
+          <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+            <div className="h-11 rounded-lg border border-slate-200 bg-white/90 px-2 py-1"><p className="text-[8px] text-slate-500">月度套餐额度</p><strong className="block font-mono text-xs text-emerald-700">{(student.monthlyTokenRemaining / 1000).toFixed(0)}k <span className="text-[8px] font-normal text-slate-400">/ {(student.monthlyTokenLimit / 1000).toFixed(0)}k</span></strong></div>
+            <div className="h-11 rounded-lg border border-slate-200 bg-white/90 px-2 py-1"><p className="text-[8px] text-slate-500">加油包余额</p><strong className="block font-mono text-xs text-emerald-700">{(student.boosterTokenRemaining / 1000).toFixed(0)}k <span className="font-sans text-[7px] font-normal text-slate-400">（永久有效）</span></strong></div>
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <button onClick={() => setShowCodeModal(true)} className="flex h-8 items-center justify-center gap-1.5 rounded-xl border border-emerald-600 bg-white text-[11px] font-bold text-emerald-700 transition active:scale-[.98]"><Ticket className="size-3" />激活授权码</button>
-            <button onClick={() => setShowBoosterModal(true)} className="flex h-8 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-[11px] font-bold text-white shadow-sm transition active:scale-[.98]"><ShoppingBag className="size-3" />充值加油包</button>
+          <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+            <button onClick={() => setShowCodeModal(true)} className="flex h-7 items-center justify-center gap-1 rounded-lg border border-emerald-600 bg-white text-[10px] font-bold text-emerald-700 transition active:scale-[.98]"><Ticket className="size-2.5" />激活授权码</button>
+            <button onClick={() => setShowBoosterModal(true)} className="flex h-7 items-center justify-center gap-1 rounded-lg bg-emerald-600 text-[10px] font-bold text-white shadow-sm transition active:scale-[.98]"><ShoppingBag className="size-2.5" />充值加油包</button>
           </div>
         </div>
       </section>
 
-      <button onClick={() => onNavigateToScreen('parent_binding')} className="parent-card relative flex w-full items-center gap-2.5 overflow-hidden rounded-[18px] border border-amber-200/80 bg-white px-3.5 py-2 text-left shadow-sm">
-        <span className="parent-family-illustration flex h-12 w-16 shrink-0 items-end justify-center" aria-hidden="true">
+      <button onClick={() => onNavigateToScreen('parent_binding')} className="parent-card relative flex w-full items-center gap-2 overflow-hidden rounded-2xl border border-amber-200/80 bg-white px-3 py-1.5 text-left shadow-sm">
+        <span className="parent-family-illustration flex h-10 w-14 shrink-0 items-end justify-center" aria-hidden="true">
           <img src="/images/parent-binding-family.png" alt="" />
         </span>
-        <span className="min-w-0 flex-1"><strong className="block text-[15px] text-slate-900">家长绑定</strong><small className="mt-0.5 block truncate text-[10px] text-slate-500">绑定后可查看学习情况、报告与成长趋势</small></span>
-        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${student.isParentBound ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{student.isParentBound ? '已绑定' : '未绑定'}</span>
-        <ChevronRight className="size-4 text-slate-500" />
+        <span className="min-w-0 flex-1"><strong className="block text-[13px] text-slate-900">家长绑定</strong><small className="block truncate text-[9px] text-slate-500">绑定后可查看学习情况、报告与成长趋势</small></span>
+        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${student.isParentBound ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{student.isParentBound ? '已绑定' : '未绑定'}</span>
+        <ChevronRight className="size-3.5 text-slate-500" />
       </button>
 
-      <section className="overflow-hidden rounded-[18px] border border-slate-200/80 bg-white px-3.5 shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white px-3 shadow-sm">
         <MenuItem icon={<UserRound />} tone="green" title="个人资料" subtitle="头像、昵称与学校" onClick={() => onNavigateToScreen('profile_details')} />
         <MenuItem icon={<MessageSquareMore />} tone="blue" title="意见反馈" subtitle="你的建议会帮助我们做得更好" />
         <MenuItem icon={<Info />} tone="violet" title="关于开窍" subtitle="产品介绍与版本信息" />
       </section>
 
-      <button className="flex h-10 w-full items-center justify-center gap-2 rounded-[16px] border border-rose-200 bg-white text-sm font-bold text-rose-600 transition hover:bg-rose-50"><LogOut className="size-4" />退出登录</button>
+      <button className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-white text-xs font-bold text-rose-600 transition hover:bg-rose-50"><LogOut className="size-3.5" />退出登录</button>
 
       {showCodeModal && (
         <Modal onClose={() => setShowCodeModal(false)} title="激活授权码" icon={<KeyRound className="size-5" />}>
@@ -177,8 +177,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 };
 
 const MenuItem = ({ icon, tone, title, subtitle, onClick }: { icon: React.ReactNode; tone: 'green' | 'blue' | 'violet'; title: string; subtitle: string; onClick?: () => void }) => (
-  <button onClick={onClick} className="flex w-full items-center gap-3 border-b border-slate-100 py-2.5 text-left last:border-0">
-    <span className={`menu-icon menu-icon-${tone}`}>{icon}</span><span className="flex-1"><strong className="block text-[13px] text-slate-900">{title}</strong><small className="mt-0.5 block text-[10px] text-slate-500">{subtitle}</small></span><ChevronRight className="size-4 text-slate-400" />
+  <button onClick={onClick} className="flex w-full items-center gap-2.5 border-b border-slate-100 py-2 text-left last:border-0">
+    <span className={`menu-icon menu-icon-${tone}`}>{icon}</span><span className="flex-1"><strong className="block text-xs text-slate-900">{title}</strong><small className="block text-[9px] text-slate-500">{subtitle}</small></span><ChevronRight className="size-3.5 text-slate-400" />
   </button>
 );
 

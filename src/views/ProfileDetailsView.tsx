@@ -39,50 +39,50 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({ student,
   };
 
   return (
-    <div className="px-5 pt-5 pb-28 space-y-4 animate-fade-in">
-      <section className="bg-white rounded-2xl border border-slate-200/80 card-shadow p-5">
+    <div className="space-y-3 px-5 pb-24 pt-3 animate-fade-in">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-3.5 card-shadow">
         <div className="flex flex-col items-center">
-          <label className="relative w-24 h-24 cursor-pointer group">
+          <label className="relative size-[68px] cursor-pointer group">
             <img src={avatar} alt="个人头像" className="w-full h-full rounded-full object-cover border-2 border-emerald-500 p-0.5 bg-white" referrerPolicy="no-referrer" />
-            <span className="absolute right-0 bottom-0 w-8 h-8 rounded-full bg-emerald-600 text-white border-2 border-white flex items-center justify-center shadow-sm group-active:scale-95 transition-transform">
-              <Camera className="w-4 h-4" />
+            <span className="absolute bottom-0 right-0 flex size-6 items-center justify-center rounded-full border-2 border-white bg-emerald-600 text-white shadow-sm transition-transform group-active:scale-95">
+              <Camera className="size-3" />
             </span>
             <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
           </label>
-          <p className="mt-3 text-xs text-slate-500">点击头像更换图片</p>
+          <p className="mt-1.5 text-[10px] text-slate-500">点击头像更换图片</p>
         </div>
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-4 space-y-2.5">
           <label className="block">
-            <span className="text-sm font-bold text-slate-800">昵称</span>
-            <input value={name} maxLength={16} onChange={(event) => setName(event.target.value)} className="mt-2 w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-900 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
+            <span className="text-xs font-bold text-slate-800">昵称</span>
+            <input value={name} maxLength={16} onChange={(event) => setName(event.target.value)} className="mt-1 w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-900 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
           </label>
           <label className="block">
-            <span className="text-sm font-bold text-slate-800">学校</span>
-            <input value={school} maxLength={30} onChange={(event) => setSchool(event.target.value)} className="mt-2 w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-900 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
+            <span className="text-xs font-bold text-slate-800">学校</span>
+            <input value={school} maxLength={30} onChange={(event) => setSchool(event.target.value)} className="mt-1 w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-900 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
           </label>
         </div>
       </section>
 
-      <section className="bg-white rounded-2xl border border-slate-200/80 card-shadow p-5">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-3.5 card-shadow">
         <div className="flex items-center gap-2">
-          <GraduationCap className="w-5 h-5 text-blue-600" />
-          <h2 className="text-base font-extrabold text-slate-900">学籍信息</h2>
+          <GraduationCap className="size-4 text-blue-600" />
+          <h2 className="text-sm font-extrabold text-slate-900">学籍信息</h2>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-slate-50 border border-slate-100 p-3"><p className="text-xs text-slate-500">学段</p><p className="mt-1 text-sm font-extrabold text-slate-800">初中</p></div>
-          <div className="rounded-xl bg-slate-50 border border-slate-100 p-3"><p className="text-xs text-slate-500">年级</p><p className="mt-1 text-sm font-extrabold text-slate-800">{student.grade}</p></div>
+        <div className="mt-2.5 grid grid-cols-2 gap-2">
+          <div className="rounded-xl border border-slate-100 bg-slate-50 px-2.5 py-2"><p className="text-[10px] text-slate-500">学段</p><p className="mt-0.5 text-xs font-extrabold text-slate-800">初中</p></div>
+          <div className="rounded-xl border border-slate-100 bg-slate-50 px-2.5 py-2"><p className="text-[10px] text-slate-500">年级</p><p className="mt-0.5 text-xs font-extrabold text-slate-800">{student.grade}</p></div>
         </div>
-        <div className="mt-4">
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-800"><School className="w-4 h-4 text-blue-600" />已开通学科</div>
-          <div className="flex flex-wrap gap-2 mt-3">
-            {SUBJECTS.map((subject) => <span key={subject} className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">{subject}</span>)}
+        <div className="mt-2.5">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800"><School className="size-3.5 text-blue-600" />已开通学科</div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {SUBJECTS.map((subject) => <span key={subject} className="rounded-lg border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700">{subject}</span>)}
           </div>
         </div>
       </section>
 
-      <button onClick={handleSave} className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-        {saved ? <><Check className="w-4 h-4" />已保存</> : <><UserRound className="w-4 h-4" />保存资料</>}
+      <button onClick={handleSave} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-xs font-extrabold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98]">
+        {saved ? <><Check className="size-3.5" />已保存</> : <><UserRound className="size-3.5" />保存资料</>}
       </button>
     </div>
   );

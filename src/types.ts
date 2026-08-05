@@ -21,6 +21,29 @@ export const ERROR_CATEGORIES = ['概念没理解', '计算错误', '审题遗�
 
 export type ErrorCategory = (typeof ERROR_CATEGORIES)[number];
 
+export type ErrorReasonSource = '学生自报' | 'AI 候选' | '系统兜底';
+
+export interface ErrorReasonTrace {
+  finalReason: ErrorCategory | '其他：错因不明';
+  source: ErrorReasonSource;
+  studentReportedReason?: ErrorCategory;
+  aiCandidateReason?: ErrorCategory;
+}
+
+export interface ResolutionEvidence {
+  id: string;
+  sourceQuestionId: string;
+  sourceType: '拍照批改' | '系统内练习' | '学生自报';
+  subject: SubjectType;
+  questionText: string;
+  firstWrongAnswer: string;
+  correctAnswer: string;
+  assistanceEvidence: string[];
+  status: '已当场解决' | '待修复';
+  resolvedAt?: string;
+  createdAt: string;
+}
+
 export type MasteryState = '未学习' | '学习中' | '已学习' | '已练习';
 
 export type ConceptLevel = '0 - 未理解' | '1 - 知道定义' | '2 - 理解特征' | '3 - 能解释易混点' | '4 - 主动讲清楚';
@@ -199,6 +222,12 @@ export interface WrongQuestion {
   steps?: string[];
   knowledgePoints?: string[];
   options?: { key: string; text: string }[];
+  sourceType?: '拍照批改' | '系统内练习' | '学生自报';
+  sourceQuestionId?: string;
+  evaluationRule?: string;
+  errorReasonTrace?: ErrorReasonTrace;
+  firstErrorEvidence?: Pick<ResolutionEvidence, 'firstWrongAnswer' | 'assistanceEvidence' | 'createdAt'>;
+  repairUnitId?: string;
 }
 
 export interface WrongQuestionReviewAttempt {
