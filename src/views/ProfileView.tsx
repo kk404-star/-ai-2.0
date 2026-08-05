@@ -147,49 +147,46 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
 
         {/* Platform Token Meter Box */}
-        <div className="bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 p-4 rounded-xl text-white space-y-3 shadow-sm relative overflow-hidden">
-          {/* Subtle bg shine effect */}
-          <div className="absolute -right-6 -bottom-6 w-28 h-28 bg-emerald-500/20 rounded-full blur-xl pointer-events-none" />
-
-          <div className="flex items-center justify-between gap-2 relative z-10">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-100">
-              <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+        <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/70 p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
+              <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>可用余额</span>
             </div>
 
             <div className="text-right">
-              <span className="text-2xl font-black text-amber-300 font-mono tracking-tight">
+              <span className="text-2xl font-black text-emerald-700 font-mono tracking-tight">
                 {totalTokensAvailable.toLocaleString()}
               </span>
-              <span className="text-[11px] text-emerald-200 font-sans ml-1">Token</span>
+              <span className="text-[11px] text-emerald-600 font-sans ml-1">Token</span>
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="space-y-1 relative z-10">
-            <div className="w-full h-2 bg-black/30 rounded-full overflow-hidden p-0.5 border border-white/10">
+          <div className="space-y-1">
+            <div className="w-full h-2 rounded-full overflow-hidden bg-emerald-100 p-0.5">
               <div
-                className="h-full bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full transition-all duration-700"
+                className="h-full rounded-full bg-emerald-500 transition-all duration-700"
                 style={{ width: `${monthlyPercent}%` }}
               />
             </div>
           </div>
 
           {/* Asset Breakdown Grid */}
-          <div className="grid grid-cols-2 gap-2 pt-1 relative z-10">
-            <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/10">
-              <span className="text-[10px] text-emerald-200 font-medium block">月度套餐额度</span>
-              <div className="font-extrabold font-mono text-white text-xs mt-0.5">
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="rounded-xl border border-emerald-100 bg-white/90 p-2.5">
+              <span className="text-[10px] text-slate-500 font-medium block">月度套餐额度</span>
+              <div className="font-extrabold font-mono text-emerald-800 text-xs mt-0.5">
                 {(student.monthlyTokenRemaining / 1000).toFixed(0)}k
-                <span className="text-[10px] text-emerald-300 font-sans font-normal"> / {(student.monthlyTokenLimit / 1000).toFixed(0)}k</span>
+                <span className="text-[10px] text-slate-400 font-sans font-normal"> / {(student.monthlyTokenLimit / 1000).toFixed(0)}k</span>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/10">
-              <span className="text-[10px] text-amber-200 font-medium block">加油包永久 Token</span>
-              <div className="font-extrabold font-mono text-amber-300 text-xs mt-0.5">
+            <div className="rounded-xl border border-emerald-100 bg-white/90 p-2.5">
+              <span className="text-[10px] text-slate-500 font-medium block">加油包永久 Token</span>
+              <div className="font-extrabold font-mono text-emerald-800 text-xs mt-0.5">
                 {(student.boosterTokenRemaining / 1000).toFixed(0)}k
-                <span className="text-[10px] text-emerald-200 font-sans font-normal"> (永久有效)</span>
+                <span className="text-[10px] text-slate-400 font-sans font-normal"> (永久有效)</span>
               </div>
             </div>
           </div>

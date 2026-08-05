@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { BookOpenCheck, CheckCircle2, Home, Sparkles, XCircle } from 'lucide-react';
+import { BookOpenCheck, CheckCircle2, Sparkles, XCircle } from 'lucide-react';
 import { ScreenType, SubjectType, WrongQuestion } from '../types';
 
 interface InstantLearningViewProps {
@@ -121,10 +121,6 @@ export const InstantLearningView: React.FC<InstantLearningViewProps> = ({
           <p className="mt-1 text-xs text-white/80">{originalResult && variantResult ? (isDue ? (wrongItem.reviewStage === 2 ? '该错题已归档，可随时在错题本回看。' : '第 3 天将安排第二轮验证。') : '已记录本次自由练习。') : (isDue ? '查看讲解后，系统将在明天重新安排当前轮次。' : '已记录本次自由练习。')}</p>
         </div>
       )}
-
-      <div className="mobile-fixed-footer">
-        <button onClick={onReturnHome} className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-xs font-bold text-white shadow-md"><Home className="h-4 w-4" />{completed ? '完成并返回首页' : '返回首页'}</button>
-      </div>
     </div>
   );
 };

@@ -151,25 +151,15 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
   return (
     <div className="px-5 pt-4 pb-28 space-y-4 animate-fade-in">
       {workspaceSwitcher}
-      {/* Top Status Filter Chips */}
-      <div className="flex gap-2 overflow-x-auto hide-scrollbar py-1">
-        {(['全部', '未复习', '复习中', '已掌握'] as const).map((st) => (
-          <button
-            key={st}
-            onClick={() => setStatusFilter(st)}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
-              statusFilter === st
-                ? 'bg-emerald-600 text-white font-bold shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            {st}
-          </button>
-        ))}
-      </div>
-
       {/* Dropdown Selectors */}
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2">
+        <CustomDropdownSelect
+          value={statusFilter}
+          onChange={(value) => setStatusFilter(value as typeof statusFilter)}
+          options={['全部', '未复习', '复习中', '已掌握']}
+          placeholder="全部"
+        />
+
         {/* Subject Filter */}
         <CustomDropdownSelect
           value={subjectFilter}
