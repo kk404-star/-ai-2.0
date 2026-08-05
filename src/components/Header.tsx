@@ -15,9 +15,8 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const isTabScreen = currentScreen === 'tab';
   const resolvedTitle = screenTitle ?? '开窍 AI 学伴';
-
   return (
-    <header className="sticky top-0 z-40 glass-nav flex justify-between items-center px-5 h-14 bg-white/95 border-b border-slate-100">
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-100 bg-white/95 px-5 glass-nav">
       {/* Left side */}
       <div className="flex items-center gap-2">
         {!isTabScreen && onBack ? (
@@ -30,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
         ) : null}
 
         {resolvedTitle && (
-          <h1 className="text-base font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-base font-extrabold tracking-tight text-slate-900">
             {resolvedTitle}
           </h1>
         )}
@@ -39,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Right side: Student avatar */}
       <div className="flex items-center gap-2">
         {/* Student Avatar - AI Robot */}
-        <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-400/80 shadow-2xs flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+        <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-emerald-400/80 bg-emerald-50 p-0.5 shadow-2xs">
           <svg viewBox="0 0 120 120" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="26" y="26" width="68" height="56" rx="24" fill="#E6F4EA" stroke="#10B981" strokeWidth="3" />
             <rect x="34" y="35" width="52" height="38" rx="16" fill="#022C22" />

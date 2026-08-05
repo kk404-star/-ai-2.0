@@ -242,8 +242,8 @@ export default function App() {
   const openQuestionBank = (title: string, code?: string) => {
     selectKnowledgePoint(title, code);
     setWrongWorkspaceMode('bank');
-    setActiveScreen('tab');
     setActiveTab('wrong');
+    setActiveScreen('practice');
   };
 
   const handleCompleteQuiz = (completedQuestionIds: string[]) => {
@@ -412,9 +412,14 @@ export default function App() {
       return (
         <PhotoScanView
           records={correctionHistory}
+          wrongQuestions={wrongQuestions}
           onNavigateToDetail={(rec) => {
             setSelectedCorrection(rec);
             setActiveScreen('correction_detail');
+          }}
+          onOpenWrongQuestion={(question) => {
+            selectWrongQuestion(question);
+            setActiveScreen('instant_learning');
           }}
         />
       );
@@ -510,12 +515,10 @@ export default function App() {
           <HomeView
             student={student}
             tasks={tasks}
-            wrongQuestions={wrongQuestions}
             todayTaskCompleted={todayTaskProgress.completed}
             todayTaskTotal={todayTaskProgress.total}
             onNavigateToScreen={(screen) => setActiveScreen(screen)}
             onOpenReport={() => setActiveScreen('diagnostic_report')}
-            onSubjectChange={handleSubjectChange}
             onSelectKnowledgePointForPractice={(title) => selectKnowledgePoint(title)}
           />
         );
@@ -543,8 +546,14 @@ export default function App() {
             selectedKnowledgePointTitle={selectedKnowledgePointTitle}
             workspaceMode={wrongWorkspaceMode}
             onWorkspaceModeChange={setWrongWorkspaceMode}
-            onNavigateToScreen={(screen) => setActiveScreen(screen)}
-            onSelectWrongItemForInstantLearning={selectWrongQuestion}
+            onStartKnowledgeStudy={(title) => {
+              selectKnowledgePoint(title);
+              setActiveScreen('knowledge_study');
+            }}
+            onOpenWrongQuestion={(item) => {
+              selectWrongQuestion(item);
+              setActiveScreen('instant_learning');
+            }}
             onStartQuestionBankPractice={() => setActiveScreen('practice')}
           />
         );

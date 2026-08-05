@@ -45,6 +45,11 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   onCompleteQuiz,
   onQuestionCompleted,
 }) => {
+  const availableQuestionBank = useMemo(
+    () => [...questionBank, ...sampleQuestionsList.filter((seedQuestion) => !questionBank.some((question) => question.id === seedQuestion.id))],
+    [questionBank]
+  );
+
   const questions = useMemo<QuizQuestion[]>(() => {
     const toWrongQuestion = (item: WrongQuestion, index: number, total: number): QuizQuestion => {
       const correctOptionKey = item.options
@@ -83,7 +88,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
       };
 
       const wrongPool = wrongQuestions.filter((item) => !currentSubject || item.subject === currentSubject);
-      const learnedBankPool = questionBank.filter((item) =>
+      const learnedBankPool = availableQuestionBank.filter((item) =>
         (!currentSubject || item.subject === currentSubject) && isLearnedKnowledge(item.knowledgePoint)
       );
       const selectedWrong = wrongPool.slice(0, 2);
@@ -100,7 +105,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
 
     const normalize = (value: string) => value.replace(/[\s的与及·、（）()Δ]/g, '').toLowerCase();
     const selectedTitle = normalize(knowledgePointTitle);
-    const matchedBankQuestions = questionBank.filter((item) => {
+    const matchedBankQuestions = availableQuestionBank.filter((item) => {
       const questionTitle = normalize(item.knowledgePoint);
       if (questionTitle.includes(selectedTitle) || selectedTitle.includes(questionTitle)) return true;
       const bigrams = Array.from({ length: Math.max(0, questionTitle.length - 1) }, (_, index) => questionTitle.slice(index, index + 2));
@@ -114,7 +119,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
     if (matchedWrongQuestions.length === 0) return matchedBankQuestions;
 
     return matchedWrongQuestions.map((item, index) => toWrongQuestion(item, index, matchedWrongQuestions.length));
-  }, [currentSubject, knowledgePointTitle, learnedKnowledgePointTitles, questionBank, questionBankOnly, wrongQuestions]);
+  }, [availableQuestionBank, currentSubject, knowledgePointTitle, learnedKnowledgePointTitles, questionBankOnly, wrongQuestions]);
 
   const [activeQuestionIndex, setActiveQuestionIndex] = useState<number>(0);
   const currentQuestion = questions[activeQuestionIndex] || initialQuestion;
@@ -129,6 +134,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
 
   // Track answered questions status across all questions
   const [answeredQuestions, setAnsweredQuestions] = useState<Record<number, boolean>>({});
+  const [questionResults, setQuestionResults] = useState<Record<number, boolean>>({});
   // Question sheet modal
   const [showAnswerSheet, setShowAnswerSheet] = useState(false);
 
@@ -180,8 +186,14 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   };
 
   const handleSubmit = () => {
+    const isCorrect = currentType === '选择题' || currentType === '判断题'
+      ? selectedKey === currentQuestion.correctOptionKey
+      : currentType === '填空题'
+      ? fillAnswers.trim() === (currentQuestion.sampleFinalAnswer || '').trim()
+      : true;
     setIsSubmitted(true);
     setAnsweredQuestions((prev) => ({ ...prev, [activeQuestionIndex]: true }));
+    setQuestionResults((prev) => ({ ...prev, [activeQuestionIndex]: isCorrect }));
     onQuestionCompleted?.(currentQuestion.id);
   };
 
@@ -224,6 +236,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
           {questions.map((q, idx) => {
             const isCurrent = activeQuestionIndex === idx;
             const isAnswered = !!answeredQuestions[idx];
+            const isCorrect = questionResults[idx];
             const wasPracticed = q.practiceStatus === '已练习';
 
             return (
@@ -231,15 +244,19 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
                 key={q.id}
                 onClick={() => jumpToQuestion(idx)}
                 className={`w-7 h-7 rounded-lg text-xs font-black transition-all flex items-center justify-center shrink-0 ${
-                  isCurrent
+                  isCurrent && isSubmitted && isCorrect === false
+                    ? 'bg-rose-500 text-white shadow-2xs scale-105'
+                    : isCurrent
                     ? 'bg-emerald-600 text-white shadow-2xs scale-105'
                     : isAnswered
-                    ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300/80'
+                    ? isCorrect
+                      ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300/80'
+                      : 'bg-rose-50 text-rose-700 font-bold border border-rose-300/80'
                     : wasPracticed
                     ? 'bg-blue-50 text-blue-700 border border-blue-200'
                     : 'bg-transparent text-slate-600 hover:bg-slate-200/60'
                 }`}
-                title={`第 ${idx + 1} 题 ${isAnswered || wasPracticed ? '(已练习)' : '(未练习)'}`}
+                title={`第 ${idx + 1} 题 ${isAnswered ? (isCorrect ? '(答对)' : '(答错)') : wasPracticed ? '(已练习)' : '(未练习)'}`}
               >
                 {idx + 1}
               </button>
@@ -621,6 +638,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
               {questions.map((q, idx) => {
                 const isCurrent = activeQuestionIndex === idx;
                 const isAnswered = !!answeredQuestions[idx];
+                const isCorrect = questionResults[idx];
 
                 return (
                   <button
@@ -628,10 +646,14 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
                     type="button"
                     onClick={() => jumpToQuestion(idx)}
                     className={`h-11 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center relative border ${
-                      isCurrent
+                      isCurrent && isSubmitted && isCorrect === false
+                        ? 'bg-rose-500 text-white border-rose-600 shadow-md ring-2 ring-rose-500/30 scale-105'
+                        : isCurrent
                         ? 'bg-emerald-600 text-white border-emerald-700 shadow-md ring-2 ring-emerald-500/30 scale-105'
                         : isAnswered
-                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold hover:bg-emerald-100'
+                        ? isCorrect
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold hover:bg-emerald-100'
+                          : 'bg-rose-50 text-rose-700 border-rose-300 font-extrabold hover:bg-rose-100'
                         : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                     }`}
                   >

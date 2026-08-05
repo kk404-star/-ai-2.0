@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
-import { 
-  Award, 
-  UserRound, 
-  MessageSquare, 
-  Info, 
-  ChevronRight, 
-  Edit, 
-  Key,
-  LogOut,
-  X,
+import {
+  BadgeInfo,
   CheckCircle2,
-  BadgeCheck,
-  Zap,
+  ChevronRight,
   CreditCard,
-  UserCheck,
-  ShieldAlert,
-  Sparkles
+  Edit3,
+  House,
+  Info,
+  KeyRound,
+  LogOut,
+  MessageSquareMore,
+  School,
+  ShoppingBag,
+  Ticket,
+  UserRound,
+  UsersRound,
+  X,
+  Zap,
 } from 'lucide-react';
-import { StudentProfile, ScreenType, TokenBoosterPack } from '../types';
+import { ScreenType, StudentProfile, TokenBoosterPack } from '../types';
 
 interface ProfileViewProps {
   student: StudentProfile;
@@ -38,44 +39,31 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onActivateCode,
   onBuyBoosterPack,
 }) => {
-  // Modal states
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [showBoosterModal, setShowBoosterModal] = useState(false);
-
-  // B2B Code Activation states
   const [inputCode, setInputCode] = useState(student.activatedAuthorizationCode || '');
   const [codeSuccessMsg, setCodeSuccessMsg] = useState('');
   const [codeErrMsg, setCodeErrorMsg] = useState('');
-
-  // B2C Booster purchase states
   const [selectedPack, setSelectedPack] = useState<TokenBoosterPack>(BOOSTER_PACKS[1]);
-  const [payAccount, setPayAccount] = useState<'student' | 'parent'>('student');
   const [isProcessingPay, setIsProcessingPay] = useState(false);
   const [boosterSuccessMsg, setBoosterSuccessMsg] = useState('');
 
   const totalTokensAvailable = student.monthlyTokenRemaining + student.boosterTokenRemaining;
-  const monthlyPercent = Math.min(
-    100,
-    Math.round((student.monthlyTokenRemaining / student.monthlyTokenLimit) * 100)
-  );
+  const monthlyPercent = Math.min(100, Math.round((student.monthlyTokenRemaining / student.monthlyTokenLimit) * 100));
 
   const handleApplyCode = () => {
     setCodeErrorMsg('');
     setCodeSuccessMsg('');
-
     if (!inputCode || inputCode.replace(/[^a-zA-Z0-9]/g, '').length < 8) {
       setCodeErrorMsg('请输入正确的 12 位授权码');
       return;
     }
-
-    const success = onActivateCode(inputCode);
-    if (success) {
-      setCodeSuccessMsg('🎉 激活成功！已延长 AI 服务并增加月度额度');
-      setTimeout(() => {
+    if (onActivateCode(inputCode)) {
+      setCodeSuccessMsg('激活成功，学习权益已更新');
+      window.setTimeout(() => {
         setShowCodeModal(false);
-        setInputCode(inputCode.trim());
         setCodeSuccessMsg('');
-      }, 1500);
+      }, 1200);
     } else {
       setCodeErrorMsg('授权码不存在或已被使用，请核对后重试');
     }
@@ -83,394 +71,122 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   const handleConfirmBoosterPay = () => {
     setIsProcessingPay(true);
-    setBoosterSuccessMsg('');
-
-    setTimeout(() => {
+    window.setTimeout(() => {
       onBuyBoosterPack(selectedPack.tokens);
       setIsProcessingPay(false);
-      setBoosterSuccessMsg(`🎉 充值成功！已到账 ${selectedPack.tokens.toLocaleString()} 永久 Token`);
-
-      setTimeout(() => {
+      setBoosterSuccessMsg(`已到账 ${selectedPack.tokens.toLocaleString()} 永久 Token`);
+      window.setTimeout(() => {
         setShowBoosterModal(false);
         setBoosterSuccessMsg('');
-      }, 1600);
-    }, 1200);
+      }, 1400);
+    }, 900);
   };
 
   return (
-    <div className="px-5 pt-4 pb-28 space-y-4 animate-fade-in">
-      {/* Student Avatar & Basic Profile Card */}
-      <div
-        onClick={() => onNavigateToScreen('profile_details')}
-        className="flex items-center gap-4 bg-white p-4.5 rounded-2xl card-shadow border border-slate-200/80 cursor-pointer hover:bg-slate-50 transition-colors"
-      >
-        <div className="relative w-14 h-14 shrink-0">
-          <img
-            src={student.avatar}
-            alt={student.name}
-            className="w-full h-full rounded-full object-cover border-2 border-emerald-500 shadow-xs"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute bottom-0 right-0 bg-emerald-600 text-white p-1 rounded-full border-2 border-white shadow-xs">
-            <Edit className="w-3 h-3" />
-          </div>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <h2 className="text-base font-extrabold text-slate-900">{student.name}</h2>
-          <div className="flex flex-wrap gap-1.5 mt-1.5">
-            <span className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
-              {student.school}
+    <div className="profile-page space-y-2.5 px-3.5 pt-2 pb-20 animate-fade-in">
+      <section className="profile-hero overflow-hidden rounded-[18px] border border-emerald-100 px-3 py-2.5 shadow-[0_10px_28px_-18px_rgba(5,150,105,.45)]">
+        <div className="relative z-10 flex items-center gap-3">
+          <button onClick={() => onNavigateToScreen('profile_details')} className="relative shrink-0 rounded-full" aria-label="编辑个人资料">
+            <span className="block size-[58px] rounded-full border-2 border-emerald-500 bg-white p-1 shadow-sm">
+              <img src={student.avatar} alt={student.name} className="size-full rounded-full object-cover" referrerPolicy="no-referrer" />
             </span>
-            <span className="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full text-xs font-bold border border-emerald-100">
-              {student.className}
+            <span className="absolute -bottom-0.5 -right-0.5 grid size-5 place-items-center rounded-full border-2 border-white bg-emerald-600 text-white shadow-sm">
+              <Edit3 className="size-3" />
             </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Service Center Card - Refined Light Aesthetic without artificial side border or heavy black block */}
-      <div className="bg-white rounded-2xl card-shadow border border-slate-200/80 p-4.5 space-y-3.5">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-emerald-600 shrink-0" />
-              <h3 className="text-sm font-extrabold text-slate-900">学习服务中心</h3>
-            </div>
-            <p className="text-xs text-slate-500 font-medium">{student.aiPackageName}</p>
-          </div>
-
-          <span className="text-[11px] font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-200/60 shrink-0 whitespace-nowrap">
-            有效期至 {student.aiPackageExpiry}
-          </span>
-        </div>
-
-        {/* Platform Token Meter Box */}
-        <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/70 p-4 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
-              <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>可用余额</span>
-            </div>
-
-            <div className="text-right">
-              <span className="text-2xl font-black text-emerald-700 font-mono tracking-tight">
-                {totalTokensAvailable.toLocaleString()}
-              </span>
-              <span className="text-[11px] text-emerald-600 font-sans ml-1">Token</span>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="space-y-1">
-            <div className="w-full h-2 rounded-full overflow-hidden bg-emerald-100 p-0.5">
-              <div
-                className="h-full rounded-full bg-emerald-500 transition-all duration-700"
-                style={{ width: `${monthlyPercent}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Asset Breakdown Grid */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <div className="rounded-xl border border-emerald-100 bg-white/90 p-2.5">
-              <span className="text-[10px] text-slate-500 font-medium block">月度套餐额度</span>
-              <div className="font-extrabold font-mono text-emerald-800 text-xs mt-0.5">
-                {(student.monthlyTokenRemaining / 1000).toFixed(0)}k
-                <span className="text-[10px] text-slate-400 font-sans font-normal"> / {(student.monthlyTokenLimit / 1000).toFixed(0)}k</span>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-emerald-100 bg-white/90 p-2.5">
-              <span className="text-[10px] text-slate-500 font-medium block">加油包永久 Token</span>
-              <div className="font-extrabold font-mono text-emerald-800 text-xs mt-0.5">
-                {(student.boosterTokenRemaining / 1000).toFixed(0)}k
-                <span className="text-[10px] text-slate-400 font-sans font-normal"> (永久有效)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-2.5 pt-0.5">
-          <button
-            onClick={() => {
-              setInputCode(student.activatedAuthorizationCode || '');
-              setShowCodeModal(true);
-            }}
-            className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-98 border border-slate-200/60"
-          >
-            <Key className="w-3.5 h-3.5 text-slate-600" />
-            <span>激活授权码</span>
           </button>
 
-          <button
-            onClick={() => setShowBoosterModal(true)}
-            className="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-98"
-          >
-            <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-            <span>充值加油包</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Function Menu List */}
-      <div className="bg-white rounded-2xl card-shadow divide-y divide-slate-100 overflow-hidden border border-slate-200/80">
-        {/* Parent & Student Dual Binding Code Entry */}
-        <div
-          onClick={() => onNavigateToScreen('parent_binding')}
-          className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-3.5 min-w-0 pr-2">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100/90 flex items-center justify-center shrink-0 shadow-2xs">
-              <svg className="w-6 h-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19.5 13.5A7.5 7.5 0 1 1 12 4.5" />
-                <path d="M8.5 12.5l2.5 2.5 5-5" />
-                <path d="M19 2.5l0.7 1.4 1.4 0.7-1.4 0.7-0.7 1.4-0.7-1.4-1.4-0.7 1.4-0.7z" fill="currentColor" stroke="none" />
-              </svg>
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-slate-900 truncate">家长绑定</p>
-              <p className="text-xs text-slate-500 truncate mt-0.5">{student.isParentBound ? `已绑定${student.parentName || '家长'}` : '绑定后可查看学习情况'}</p>
-            </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[18px] font-black tracking-tight text-slate-900">{student.name}</h2>
+            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+              <School className="size-3 text-slate-500" />{student.school}
+            </p>
+            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+              <UsersRound className="size-3 text-slate-500" />{student.className}
+            </p>
           </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <span
-              className={`text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 ${
-                student.isParentBound
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
-                  : 'bg-amber-50 text-amber-800 border border-amber-200/60'
-              }`}
-            >
-              {student.isParentBound ? '已绑定' : '未绑定'}
-            </span>
-            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-          </div>
+          <div className="profile-books" aria-hidden="true"><i /><i /><i /><b /></div>
         </div>
 
-        {/* Personal profile */}
-        <div
-          onClick={() => onNavigateToScreen('profile_details')}
-          className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 shrink-0">
-              <UserRound className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-slate-900">个人资料</p>
-              <p className="text-xs text-slate-500 mt-0.5">头像、昵称与学校</p>
-            </div>
+      </section>
+
+      <section className="rounded-[18px] border border-slate-200/80 bg-white p-3 shadow-[0_8px_24px_-16px_rgba(15,23,42,.3)]">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex gap-2.5">
+            <span className="grid size-7 place-items-center rounded-full bg-emerald-600 text-white shadow-[0_4px_12px_rgba(5,150,105,.28)]"><Zap className="size-4 fill-white" /></span>
+            <div><h3 className="text-[15px] font-black text-slate-900">我的学习权益</h3><p className="mt-0.5 text-[10px] text-slate-500">{student.aiPackageName}</p></div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+          <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">有效期至 {student.aiPackageExpiry}</span>
         </div>
 
-        {/* Feedback */}
-        <div className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer">
-          <div className="flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
-              <MessageSquare className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-bold text-slate-900">意见反馈</p>
+        <div className="mt-2 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/80 to-white p-2.5">
+          <div className="flex items-start justify-between">
+            <div><p className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">剩余学习能量 <BadgeInfo className="size-3.5" /></p><p className="mt-0.5 font-mono text-[22px] font-black tracking-tight text-emerald-700">{totalTokensAvailable.toLocaleString()} <span className="font-sans text-[10px] font-medium text-slate-500">能量值</span></p></div>
+            <span className="energy-orb"><Zap className="size-7 fill-emerald-500 text-emerald-500" /></span>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-        </div>
-
-        {/* About Us */}
-        <div className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer">
-          <div className="flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
-              <Info className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-bold text-slate-900">关于开窍</p>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-emerald-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${monthlyPercent}%` }} /></div>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="h-[54px] rounded-xl border border-slate-200 bg-white/90 px-2.5 py-1.5"><p className="text-[9px] text-slate-500">月度套餐额度</p><strong className="mt-0.5 block font-mono text-[14px] text-emerald-700">{(student.monthlyTokenRemaining / 1000).toFixed(0)}k <span className="text-[9px] font-normal text-slate-400">/ {(student.monthlyTokenLimit / 1000).toFixed(0)}k</span></strong></div>
+            <div className="h-[54px] rounded-xl border border-slate-200 bg-white/90 px-2.5 py-1.5"><p className="text-[9px] text-slate-500">加油包余额</p><strong className="mt-0.5 block font-mono text-[14px] text-emerald-700">{(student.boosterTokenRemaining / 1000).toFixed(0)}k <span className="font-sans text-[8px] font-normal text-slate-400">（永久有效）</span></strong></div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button onClick={() => setShowCodeModal(true)} className="flex h-8 items-center justify-center gap-1.5 rounded-xl border border-emerald-600 bg-white text-[11px] font-bold text-emerald-700 transition active:scale-[.98]"><Ticket className="size-3" />激活授权码</button>
+            <button onClick={() => setShowBoosterModal(true)} className="flex h-8 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-[11px] font-bold text-white shadow-sm transition active:scale-[.98]"><ShoppingBag className="size-3" />充值加油包</button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Logout Button */}
-      <button className="w-full py-3 text-rose-600 font-bold text-sm bg-white rounded-2xl border border-rose-200/80 hover:bg-rose-50/50 transition-all flex items-center justify-center gap-2 active:scale-98 shadow-2xs">
-        <LogOut className="w-4 h-4" />
-        退出登录
+      <button onClick={() => onNavigateToScreen('parent_binding')} className="parent-card relative flex w-full items-center gap-2.5 overflow-hidden rounded-[18px] border border-amber-200/80 bg-white px-3.5 py-2 text-left shadow-sm">
+        <span className="parent-family-illustration flex h-12 w-16 shrink-0 items-end justify-center" aria-hidden="true">
+          <img src="/images/parent-binding-family.png" alt="" />
+        </span>
+        <span className="min-w-0 flex-1"><strong className="block text-[15px] text-slate-900">家长绑定</strong><small className="mt-0.5 block truncate text-[10px] text-slate-500">绑定后可查看学习情况、报告与成长趋势</small></span>
+        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${student.isParentBound ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{student.isParentBound ? '已绑定' : '未绑定'}</span>
+        <ChevronRight className="size-4 text-slate-500" />
       </button>
 
-      {/* 1. B2B Activate Code Modal */}
+      <section className="overflow-hidden rounded-[18px] border border-slate-200/80 bg-white px-3.5 shadow-sm">
+        <MenuItem icon={<UserRound />} tone="green" title="个人资料" subtitle="头像、昵称与学校" onClick={() => onNavigateToScreen('profile_details')} />
+        <MenuItem icon={<MessageSquareMore />} tone="blue" title="意见反馈" subtitle="你的建议会帮助我们做得更好" />
+        <MenuItem icon={<Info />} tone="violet" title="关于开窍" subtitle="产品介绍与版本信息" />
+      </section>
+
+      <button className="flex h-10 w-full items-center justify-center gap-2 rounded-[16px] border border-rose-200 bg-white text-sm font-bold text-rose-600 transition hover:bg-rose-50"><LogOut className="size-4" />退出登录</button>
+
       {showCodeModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 animate-scale-up border border-slate-200">
-            <div className="flex justify-between items-center">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Key className="w-5 h-5 text-emerald-700" />
-                授权码
-              </h3>
-              <button
-                onClick={() => setShowCodeModal(false)}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-500 leading-relaxed">
-              输入授权码后即可激活学习服务与额度。
-            </p>
-
-            <input
-              type="text"
-              value={inputCode}
-              onChange={(e) => setInputCode(e.target.value)}
-              placeholder="请输入授权码..."
-              className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono tracking-wider text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-
-            {codeErrMsg && (
-              <p className="text-xs font-bold text-rose-600">{codeErrMsg}</p>
-            )}
-
-            {codeSuccessMsg && (
-              <p className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" />
-                {codeSuccessMsg}
-              </p>
-            )}
-
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setShowCodeModal(false)}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleApplyCode}
-                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all active:scale-95 shadow-xs"
-              >
-                立即激活
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal onClose={() => setShowCodeModal(false)} title="激活授权码" icon={<KeyRound className="size-5" />}>
+          <p className="text-xs leading-5 text-slate-500">输入机构提供的授权码，即可激活学习服务与额度。</p>
+          <input autoFocus value={inputCode} onChange={(event) => setInputCode(event.target.value)} placeholder="请输入授权码" className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 font-mono text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" />
+          {codeErrMsg && <p className="text-xs font-bold text-rose-600">{codeErrMsg}</p>}
+          {codeSuccessMsg && <p className="flex items-center gap-1 text-xs font-bold text-emerald-600"><CheckCircle2 className="size-4" />{codeSuccessMsg}</p>}
+          <div className="grid grid-cols-2 gap-2"><button onClick={() => setShowCodeModal(false)} className="h-10 rounded-xl border border-slate-200 text-xs font-bold text-slate-600">取消</button><button onClick={handleApplyCode} className="h-10 rounded-xl bg-emerald-600 text-xs font-bold text-white">立即激活</button></div>
+        </Modal>
       )}
 
-      {/* 2. B2C Token Booster Purchase Modal */}
       {showBoosterModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 animate-scale-up border border-slate-200">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-amber-100 text-amber-700 rounded-xl">
-                  <Zap className="w-5 h-5 fill-amber-500" />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-slate-900">B2C Token 加油包</h3>
-                  <p className="text-[10px] text-slate-500 font-medium">开窍 AI 统一平台 Token 增值服务</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowBoosterModal(false)}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Booster Packs Selection Grid */}
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-700">选择充值规格（加油包 Token 永久有效）：</span>
-              <div className="grid grid-cols-3 gap-2.5">
-                {BOOSTER_PACKS.map((pack) => {
-                  const isSelected = selectedPack.id === pack.id;
-                  return (
-                    <button
-                      key={pack.id}
-                      onClick={() => setSelectedPack(pack)}
-                      className={`relative p-3 rounded-2xl border text-center transition-all ${
-                        isSelected
-                          ? 'border-emerald-600 bg-emerald-50/70 text-emerald-900 shadow-sm scale-102 ring-2 ring-emerald-500/20'
-                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
-                      }`}
-                    >
-                      {pack.popular && (
-                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-extrabold tracking-tight whitespace-nowrap shadow-xs">
-                          推荐规格
-                        </span>
-                      )}
-                      <div className="text-xs font-extrabold text-slate-900 mt-1">
-                        {(pack.tokens / 10000).toFixed(0)}万 Token
-                      </div>
-                      <div className="text-base font-black text-emerald-700 mt-1">
-                        ¥{pack.price}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Payment Account Selector */}
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-2">
-              <div className="flex justify-between items-center text-xs font-bold text-slate-700">
-                <span>选择付款账号与受益人：</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <button
-                  onClick={() => setPayAccount('student')}
-                  className={`p-2.5 rounded-xl border text-left font-bold transition-all ${
-                    payAccount === 'student'
-                      ? 'bg-white border-emerald-600 text-emerald-800 shadow-2xs'
-                      : 'bg-slate-100/80 border-transparent text-slate-600'
-                  }`}
-                >
-                  👦 学生本人支付
-                  <span className="block text-[10px] text-slate-400 font-normal mt-0.5">受益人: {student.name}</span>
-                </button>
-
-                <button
-                  onClick={() => setPayAccount('parent')}
-                  aria-label="选择家长账号支付"
-                  className={`p-2.5 rounded-xl border text-left font-bold transition-all ${
-                    payAccount === 'parent'
-                      ? 'bg-white border-emerald-600 text-emerald-800 shadow-2xs'
-                      : 'bg-slate-100/80 border-transparent text-slate-600'
-                  }`}
-                >
-                  👨‍👩‍👦 关联家长支付
-                  <span className="block text-[10px] text-slate-400 font-normal mt-0.5">
-                    {student.isParentBound ? '已绑定主监护人' : '需已关联监护人'}
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* Policy Note */}
-            <div className="text-[10px] text-slate-500 leading-relaxed bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/60 flex items-start gap-1.5">
-              <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <span>
-                加油包 Token 充值到受益学生账户后永久有效，与月度套餐分开独立建账。基础服务到期后剩余加油包 Token 暂冻结，重新获得基础服务后自动恢复使用。
-              </span>
-            </div>
-
-            {boosterSuccessMsg && (
-              <p className="text-xs font-bold text-emerald-600 flex items-center justify-center gap-1">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                {boosterSuccessMsg}
-              </p>
-            )}
-
-            {/* Submit Payment Button */}
-            <button
-              disabled={isProcessingPay}
-              onClick={handleConfirmBoosterPay}
-              className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md active:scale-98 transition-all disabled:opacity-50"
-            >
-              <CreditCard className="w-4 h-4" />
-              {isProcessingPay ? '微信支付处理中...' : `确认支付 ¥${selectedPack.price} 充值 Token`}
-            </button>
+        <Modal onClose={() => setShowBoosterModal(false)} title="充值加油包" icon={<Zap className="size-5 fill-current" />}>
+          <p className="text-xs text-slate-500">加油包能量永久有效，请选择充值规格：</p>
+          <div className="grid grid-cols-3 gap-2">
+            {BOOSTER_PACKS.map((pack) => <button key={pack.id} onClick={() => setSelectedPack(pack)} className={`relative rounded-xl border p-2.5 text-center ${selectedPack.id === pack.id ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-100' : 'border-slate-200 bg-slate-50'}`}>{pack.popular && <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-1.5 py-0.5 text-[8px] font-bold text-white">推荐</span>}<strong className="block text-xs text-slate-800">{pack.tokens / 10000}万</strong><b className="mt-1 block text-sm text-emerald-700">¥{pack.price}</b></button>)}
           </div>
-        </div>
+          {boosterSuccessMsg && <p className="text-center text-xs font-bold text-emerald-600">{boosterSuccessMsg}</p>}
+          <button disabled={isProcessingPay} onClick={handleConfirmBoosterPay} className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-bold text-white disabled:opacity-60"><CreditCard className="size-4" />{isProcessingPay ? '支付处理中…' : `确认支付 ¥${selectedPack.price}`}</button>
+        </Modal>
       )}
     </div>
   );
 };
+
+const MenuItem = ({ icon, tone, title, subtitle, onClick }: { icon: React.ReactNode; tone: 'green' | 'blue' | 'violet'; title: string; subtitle: string; onClick?: () => void }) => (
+  <button onClick={onClick} className="flex w-full items-center gap-3 border-b border-slate-100 py-2.5 text-left last:border-0">
+    <span className={`menu-icon menu-icon-${tone}`}>{icon}</span><span className="flex-1"><strong className="block text-[13px] text-slate-900">{title}</strong><small className="mt-0.5 block text-[10px] text-slate-500">{subtitle}</small></span><ChevronRight className="size-4 text-slate-400" />
+  </button>
+);
+
+const Modal = ({ children, onClose, title, icon }: { children: React.ReactNode; onClose: () => void; title: string; icon: React.ReactNode }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/55 p-5 backdrop-blur-sm">
+    <div className="w-full max-w-sm space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl">
+      <div className="flex items-center gap-2 text-emerald-700">{icon}<h3 className="flex-1 text-base font-black text-slate-900">{title}</h3><button onClick={onClose} className="rounded-full p-1 text-slate-400 hover:bg-slate-100"><X className="size-5" /></button></div>
+      {children}
+    </div>
+  </div>
+);

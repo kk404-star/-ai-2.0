@@ -101,6 +101,13 @@ export const InstantLearningView: React.FC<InstantLearningViewProps> = ({
         )}
       </section>
 
+      <section className="space-y-2 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
+        <h3 className="flex items-center gap-1.5 text-xs font-bold text-emerald-900"><Sparkles className="h-4 w-4 text-emerald-600" />解析</h3>
+        <div className="space-y-2 text-xs font-medium leading-relaxed text-slate-700">
+          {wrongItem.steps?.length ? wrongItem.steps.map((step, index) => <p key={index}>{step}</p>) : <p>围绕“{wrongItem.topic}”的关键条件逐步判断，正确答案为：{wrongItem.correctAnswer}。</p>}
+        </div>
+      </section>
+
       <section className="space-y-3 rounded-2xl border border-amber-200 bg-white p-4 card-shadow">
         <h3 className="flex items-center gap-1.5 text-xs font-bold text-slate-900"><Sparkles className="h-4 w-4 text-amber-500" />2. 举一反三</h3>
         <p className="rounded-xl border border-amber-200/60 bg-amber-50/60 p-3 text-xs font-medium leading-relaxed text-slate-800">{variant.question}</p>

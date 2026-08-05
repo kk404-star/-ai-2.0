@@ -112,3 +112,86 @@
 .animate-bounce-x {
   animation: bounce-x 1.2s infinite ease-in-out;
 }
+
+.profile-page {
+  background: linear-gradient(180deg, #fff 0, #f8fafc 280px);
+}
+
+.profile-hero {
+  position: relative;
+  background: linear-gradient(120deg, #fff 5%, #fbfffd 56%, #e5f8ec 100%);
+}
+
+.profile-hero::after {
+  content: '';
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  right: -50px;
+  top: -70px;
+  border-radius: 999px;
+  background: rgba(74, 222, 128, .12);
+  filter: blur(1px);
+}
+
+.profile-books {
+  position: absolute;
+  right: -18px;
+  top: 10px;
+  width: 88px;
+  height: 62px;
+  transform: scale(.82) rotate(-4deg);
+  opacity: .6;
+}
+
+.profile-books i {
+  position: absolute;
+  right: 0;
+  width: 90px;
+  height: 13px;
+  border-radius: 3px 8px 8px 3px;
+  border: 1px solid #86efac;
+  background: linear-gradient(180deg, white 0 62%, #a7f3d0 63%);
+  box-shadow: -5px 5px 10px rgba(5, 150, 105, .08);
+}
+
+.profile-books i:nth-child(1) { bottom: 4px; right: 5px; }
+.profile-books i:nth-child(2) { bottom: 20px; right: -3px; width: 82px; transform: rotate(5deg); }
+.profile-books i:nth-child(3) { bottom: 36px; right: 7px; width: 76px; transform: rotate(-2deg); }
+.profile-books b { position: absolute; right: 13px; top: 1px; width: 7px; height: 53px; border-radius: 6px; background: #065f46; transform: rotate(10deg); }
+
+.energy-orb {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #fff 0 12%, #d1fae5 42%, #a7f3d0 70%, transparent 72%);
+  filter: drop-shadow(0 8px 8px rgba(16, 185, 129, .16));
+}
+
+.parent-card {
+  background: linear-gradient(100deg, #fffdf8 0%, #fff 62%, #fffaf0 100%);
+  box-shadow: 0 8px 22px -18px rgba(180, 83, 9, .35);
+}
+
+.parent-family-illustration {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+
+.parent-family-illustration img {
+  position: absolute;
+  top: -48px;
+  left: -27px;
+  width: 116px;
+  height: auto;
+  max-width: none;
+  filter: drop-shadow(0 6px 6px rgba(120, 53, 15, .12));
+}
+.menu-icon { display: grid; width: 34px; height: 34px; flex: none; place-items: center; border-radius: 11px; }
+.menu-icon svg { width: 18px; height: 18px; }
+.menu-icon-green { background: #ecfdf5; color: #10b981; }
+.menu-icon-blue { background: #eff6ff; color: #3b82f6; }
+.menu-icon-violet { background: #f5f3ff; color: #7c3aed; }
