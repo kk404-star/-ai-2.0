@@ -635,6 +635,7 @@ export default function App() {
               setActiveScreen('tab');
               setActiveTab('study');
             }}
+            onOpenDiagnosticReport={() => setActiveScreen('diagnostic_report')}
           />
         );
 

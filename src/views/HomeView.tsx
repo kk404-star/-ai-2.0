@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import {
   ArrowRight,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { StudentProfile } from '../types';
 import { HomeRecommendation } from '../utils/homeRecommendations';
+import { CheckInCalendarModal } from '../components/CheckInCalendarModal';
 
 interface HomeViewProps {
   student: StudentProfile;
@@ -21,6 +22,7 @@ interface HomeViewProps {
   onOpenKnowledgePoint: (title: string, code: string) => void;
   onPracticeKnowledgePoint: (title: string, code: string) => void;
   onOpenStudyCatalog: () => void;
+  onOpenDiagnosticReport: () => void;
 }
 
 const WEEK_DAYS = ['一', '二', '三', '四', '五', '六', '日'];
@@ -65,7 +67,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenKnowledgePoint,
   onPracticeKnowledgePoint,
   onOpenStudyCatalog,
+  onOpenDiagnosticReport,
 }) => {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const mascotRef = useRef<HTMLDivElement>(null);
   const currentDayIndex = (new Date().getDay() + 6) % 7;
   const completionPercent = todayTaskTotal > 0
@@ -186,7 +190,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
         )}
       </section>
 
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_8px_30px_-24px_rgba(15,23,42,0.35)]">
+      <button
+        type="button"
+        onClick={() => setIsCalendarOpen(true)}
+        aria-label="查看打卡日历与学习诊断"
+        className="w-full rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-[0_8px_30px_-24px_rgba(15,23,42,0.35)] transition hover:border-emerald-200 hover:shadow-[0_12px_34px_-24px_rgba(5,150,105,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-[0.99]"
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-black tracking-[0.15em] text-emerald-700/65">本周学习进程</p>
@@ -226,7 +235,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
           <span className="font-medium text-slate-400">比上周多坚持 2 天</span>
         </div>
-      </section>
+      </button>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_30px_-24px_rgba(15,23,42,0.35)]">
         <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-4">
@@ -297,6 +306,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         )}
       </section>
+      <CheckInCalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        student={student}
+        onOpenReport={onOpenDiagnosticReport}
+      />
     </div>
   );
 };
