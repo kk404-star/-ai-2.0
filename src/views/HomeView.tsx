@@ -192,7 +192,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 }`} />
                 <span className={`mt-2 text-[10px] font-bold ${day.isToday ? 'text-emerald-700' : 'text-slate-400'}`}>{day.label}</span>
                 <span className={`mt-1 text-[9px] font-black ${day.isPast ? 'text-emerald-700/75' : 'text-transparent'}`}>
-                  {day.minutes || 1}m
+                  {day.minutes > 0 ? `${day.minutes}m` : '—'}
                 </span>
               </div>
             ))}
