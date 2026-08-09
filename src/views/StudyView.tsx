@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ChevronDown, ChevronRight, Layers, AlertTriangle, Check, CheckCircle2, GraduationCap, Sparkles, X } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight, Layers, AlertTriangle, Check, Sparkles } from 'lucide-react';
 import { SubjectType, ScreenType, KnowledgeCategory, KnowledgeL1Chapter, KnowledgeCard } from '../types';
 import { SubjectSelect } from '../components/SubjectSelect';
 
@@ -12,16 +12,6 @@ interface StudyViewProps {
   onNavigateToScreen: (screen: ScreenType) => void;
   onSelectKnowledgePointForPractice?: (title: string, code?: string) => void;
   onOpenQuestionBank?: (title: string, code?: string) => void;
-  onMarkKnowledgeAsLearned?: (code: string) => void;
-}
-
-interface LearnedModalState {
-  code: string;
-  title: string;
-  subject: SubjectType;
-  chapterTitle: string;
-  sectionTitle: string;
-  phase: 'confirm' | 'success';
 }
 
 const SUBJECTS: SubjectType[] = ['数学', '物理', '化学', '生物', '英语', '语文', '历史', '地理', '政治'];
@@ -35,10 +25,8 @@ export const StudyView: React.FC<StudyViewProps> = ({
   onNavigateToScreen,
   onSelectKnowledgePointForPractice,
   onOpenQuestionBank,
-  onMarkKnowledgeAsLearned,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [learnedModal, setLearnedModal] = useState<LearnedModalState | null>(null);
 
   // Collapsible state for Tree Chapters (L1) and Sections (L2)
   const [expandedL1, setExpandedL1] = useState<Record<string, boolean>>({
@@ -249,9 +237,14 @@ export const StudyView: React.FC<StudyViewProps> = ({
                                 {visiblePoints.map((point) => {
                                   const unpracticedCount = Math.max(0, point.boundQuestionCount - point.practicedQuestionCount);
                                   return (
-                                  <div
+                                  <button
+                                    type="button"
                                     key={point.code}
-                                    className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs space-y-2 hover:border-emerald-400 transition-all"
+                                    onClick={() => {
+                                      onSelectKnowledgePointForPractice?.(point.title, point.code);
+                                      onNavigateToScreen('knowledge_study');
+                                    }}
+                                    className="w-full space-y-2 rounded-xl border border-slate-200/80 bg-white p-3 text-left shadow-2xs transition-all hover:border-emerald-400 hover:bg-emerald-50/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 active:scale-[0.99]"
                                   >
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="min-w-0">
@@ -291,48 +284,11 @@ export const StudyView: React.FC<StudyViewProps> = ({
                                         </span>
                                       )}
 
-                                      <div className="flex items-center gap-2">
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            onSelectKnowledgePointForPractice?.(point.title, point.code);
-                                            onNavigateToScreen('knowledge_study');
-                                          }}
-                                          className="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-[11px] font-bold rounded-lg transition-all active:scale-95 flex items-center gap-1"
-                                        >
-                                          <Sparkles className="w-3 h-3 text-emerald-600" />
-                                          <span>学习</span>
-                                        </button>
-
-                                        {point.masteryState === '未学习' || point.masteryState === '学习中' ? (
-                                          <button
-                                            type="button"
-                                            onClick={() => setLearnedModal({
-                                              code: point.code,
-                                              title: point.title,
-                                              subject: chapter.subject,
-                                              chapterTitle: chapter.title,
-                                              sectionTitle: sec.title,
-                                              phase: 'confirm',
-                                            })}
-                                            className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1 text-[11px] font-bold text-white shadow-2xs transition-all hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-95"
-                                          >
-                                            <GraduationCap className="h-3 w-3" />
-                                            <span>标记已学</span>
-                                          </button>
-                                        ) : (
-                                          <button
-                                            type="button"
-                                            onClick={() => onOpenQuestionBank?.(point.title, point.code)}
-                                            className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1 text-[11px] font-bold text-white shadow-2xs transition-all hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-95"
-                                          >
-                                            <span>{point.masteryState === '已练习' ? '再练习' : '去练习'}</span>
-                                            <ChevronRight className="h-3 w-3" />
-                                          </button>
-                                        )}
+                                      <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-700">
+                                        <ChevronRight className="h-4 w-4" />
                                       </div>
                                     </div>
-                                  </div>
+                                  </button>
                                   );
                                 })}
 
@@ -369,94 +325,6 @@ export const StudyView: React.FC<StudyViewProps> = ({
         </div>
       </div>
 
-      {learnedModal && (
-        <div
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/45 px-5 backdrop-blur-[2px]"
-          onClick={() => setLearnedModal(null)}
-          role="presentation"
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="learned-dialog-title"
-            onClick={(event) => event.stopPropagation()}
-            className="relative w-full max-w-[350px] rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl"
-          >
-            <button
-              type="button"
-              onClick={() => setLearnedModal(null)}
-              aria-label="关闭"
-              className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-            >
-              <X className="h-4 w-4" />
-            </button>
-
-            {learnedModal.phase === 'success' ? (
-              <div className="text-center">
-                <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-700">
-                  <CheckCircle2 className="h-8 w-8" strokeWidth={2.5} />
-                </div>
-                <h2 id="learned-dialog-title" className="mt-4 text-xl font-black tracking-tight text-slate-950">已标记为已学</h2>
-                <p className="mt-1 text-xs font-medium text-slate-500">很好，接下来用练习验证掌握程度</p>
-              </div>
-            ) : (
-              <div className="pr-8">
-                <p className="text-[10px] font-black tracking-[0.14em] text-emerald-700/65">学习状态确认</p>
-                <h2 id="learned-dialog-title" className="mt-1 text-xl font-black tracking-tight text-slate-950">确认标记为已学？</h2>
-                <p className="mt-2 text-xs leading-5 text-slate-500">如果你已经在学校学过，可以跳过 AI 讲解，直接练习巩固。</p>
-              </div>
-            )}
-
-            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3.5 text-left">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-emerald-700 shadow-xs">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="line-clamp-2 text-sm font-black leading-5 text-slate-900">{learnedModal.title}</p>
-                <p className="mt-1 truncate text-[10px] font-bold text-slate-500">
-                  {learnedModal.subject} · {learnedModal.sectionTitle}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-5 space-y-2">
-              {learnedModal.phase === 'confirm' ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onMarkKnowledgeAsLearned?.(learnedModal.code);
-                    setLearnedModal((current) => current ? { ...current, phase: 'success' } : current);
-                  }}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-[0.98]"
-                >
-                  <Check className="h-4 w-4" strokeWidth={2.5} />
-                  确认标记
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectKnowledgePointForPractice?.(learnedModal.title, learnedModal.code);
-                    onOpenQuestionBank?.(learnedModal.title, learnedModal.code);
-                    setLearnedModal(null);
-                  }}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-[0.98]"
-                >
-                  去练习巩固 <ChevronRight className="h-4 w-4" />
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setLearnedModal(null)}
-                className="h-11 w-full rounded-xl text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-              >
-                {learnedModal.phase === 'confirm' ? '取消' : '稍后再说'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

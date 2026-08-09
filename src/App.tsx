@@ -213,19 +213,7 @@ export default function App() {
 
   const markSelectedKnowledgeAsLearned = () => {
     if (!selectedKnowledgePointCode) return;
-    setKnowledgeTree((chapters) => chapters.map((chapter) => ({
-      ...chapter,
-      children: chapter.children.map((section) => ({
-        ...section,
-        children: section.children.map((point) => point.code === selectedKnowledgePointCode && point.masteryState !== '已练习'
-          ? { ...point, masteryState: '已学习' }
-          : point),
-      })),
-    })));
-  };
-
-  const markKnowledgeAsLearned = (knowledgeCode: string) => {
-    setKnowledgeTree((chapters) => markKnowledgePointAsLearned(chapters, knowledgeCode));
+    setKnowledgeTree((chapters) => markKnowledgePointAsLearned(chapters, selectedKnowledgePointCode));
   };
 
   const selectKnowledgePoint = (title: string, code?: string) => {
@@ -505,6 +493,8 @@ export default function App() {
             markSelectedKnowledgeAsLearned();
             setActiveScreen('practice_quiz');
           }}
+          onMarkAsLearned={markSelectedKnowledgeAsLearned}
+          onStartTargetedPractice={() => setActiveScreen('practice')}
         />
       );
     }
@@ -650,7 +640,6 @@ export default function App() {
             onNavigateToScreen={(screen) => setActiveScreen(screen)}
             onSelectKnowledgePointForPractice={selectKnowledgePoint}
             onOpenQuestionBank={openQuestionBank}
-            onMarkKnowledgeAsLearned={markKnowledgeAsLearned}
           />
         );
 

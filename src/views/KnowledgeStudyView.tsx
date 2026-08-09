@@ -5,23 +5,31 @@ import {
   Bot, 
   User, 
   ArrowRight,
+  Check,
+  CheckCircle2,
+  GraduationCap,
   Sparkles,
-  RotateCcw
+  X,
 } from 'lucide-react';
 import { ChatMessage, KnowledgePoint } from '../types';
 
 interface KnowledgeStudyViewProps {
   knowledgePoint: KnowledgePoint;
   onNavigateToQuiz: () => void;
+  onMarkAsLearned: () => void;
+  onStartTargetedPractice: () => void;
 }
 
 export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
   knowledgePoint,
   onNavigateToQuiz,
+  onMarkAsLearned,
+  onStartTargetedPractice,
 }) => {
   const [inputVal, setInputVal] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [masteryProgress, setMasteryProgress] = useState(knowledgePoint.progressPercent || 45);
+  const [learnedModalPhase, setLearnedModalPhase] = useState<'confirm' | 'success' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -159,7 +167,28 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
           />
         </div>
 
-
+        <button
+          type="button"
+          onClick={() => {
+            if (knowledgePoint.masteryState === '未学习' || knowledgePoint.masteryState === '学习中') {
+              setLearnedModalPhase('confirm');
+              return;
+            }
+            onStartTargetedPractice();
+          }}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-[0.99]"
+        >
+          {knowledgePoint.masteryState === '未学习' || knowledgePoint.masteryState === '学习中' ? (
+            <>
+              <GraduationCap className="h-4 w-4" />
+              我已在学校学过，直接练题
+            </>
+          ) : (
+            <>
+              去练习巩固 <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </button>
       </div>
 
       {/* Chat Dialogue */}
@@ -257,6 +286,89 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
           </button>
         </div>
       </div>
+
+      {learnedModalPhase && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/45 px-5 backdrop-blur-[2px]"
+          onClick={() => setLearnedModalPhase(null)}
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="learned-dialog-title"
+            onClick={(event) => event.stopPropagation()}
+            className="relative w-full max-w-[350px] rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl"
+          >
+            <button
+              type="button"
+              onClick={() => setLearnedModalPhase(null)}
+              aria-label="关闭"
+              className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {learnedModalPhase === 'success' ? (
+              <div className="text-center">
+                <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-700">
+                  <CheckCircle2 className="h-8 w-8" strokeWidth={2.5} />
+                </div>
+                <h2 id="learned-dialog-title" className="mt-4 text-xl font-black tracking-tight text-slate-950">已标记为已学</h2>
+                <p className="mt-1 text-xs font-medium text-slate-500">接下来用练习验证掌握程度</p>
+              </div>
+            ) : (
+              <div className="pr-8">
+                <p className="text-[10px] font-black tracking-[0.14em] text-emerald-700/65">跳过 AI 学习</p>
+                <h2 id="learned-dialog-title" className="mt-1 text-xl font-black tracking-tight text-slate-950">确认已经学过？</h2>
+                <p className="mt-2 text-xs leading-5 text-slate-500">确认后会把这个知识点标记为已学习，并允许你直接开始练题。</p>
+              </div>
+            )}
+
+            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3.5 text-left">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-emerald-700 shadow-xs">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="line-clamp-2 text-sm font-black leading-5 text-slate-900">{knowledgePoint.title}</p>
+                <p className="mt-1 text-[10px] font-bold text-slate-500">{knowledgePoint.subject} · {knowledgePoint.grade}</p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-2">
+              {learnedModalPhase === 'confirm' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onMarkAsLearned();
+                    setLearnedModalPhase('success');
+                  }}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-[0.98]"
+                >
+                  <Check className="h-4 w-4" strokeWidth={2.5} />
+                  标记已学并练题
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onStartTargetedPractice}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-[0.98]"
+                >
+                  去练习巩固 <ArrowRight className="h-4 w-4" />
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setLearnedModalPhase(null)}
+                className="h-11 w-full rounded-xl text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              >
+                {learnedModalPhase === 'confirm' ? '继续学习' : '稍后再说'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
