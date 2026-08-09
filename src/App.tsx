@@ -51,6 +51,7 @@ import {
   WRONG_QUESTIONS_STORAGE_KEY,
 } from './utils/wrongReview';
 import { getHomeRecommendations } from './utils/homeRecommendations';
+import { markKnowledgePointAsLearned } from './utils/knowledgeMastery';
 
 export default function App() {
   const todayTaskDate = toLocalDateKey();
@@ -221,6 +222,10 @@ export default function App() {
           : point),
       })),
     })));
+  };
+
+  const markKnowledgeAsLearned = (knowledgeCode: string) => {
+    setKnowledgeTree((chapters) => markKnowledgePointAsLearned(chapters, knowledgeCode));
   };
 
   const selectKnowledgePoint = (title: string, code?: string) => {
@@ -645,6 +650,7 @@ export default function App() {
             onNavigateToScreen={(screen) => setActiveScreen(screen)}
             onSelectKnowledgePointForPractice={selectKnowledgePoint}
             onOpenQuestionBank={openQuestionBank}
+            onMarkKnowledgeAsLearned={markKnowledgeAsLearned}
           />
         );
 
