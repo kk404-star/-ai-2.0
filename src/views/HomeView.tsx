@@ -121,11 +121,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="absolute -right-5 -top-6 h-28 w-28 rounded-full bg-white/35" />
 
         <div className="relative z-10 max-w-[72%]">
-          <div className="mb-3 flex items-center gap-2 text-[10px] font-black tracking-[0.18em] text-emerald-700/70">
-            <span>今日学习</span>
-            <span className="h-1 w-1 rounded-full bg-emerald-500" />
-            <span>{student.currentSubject}</span>
-          </div>
           <h1 className="text-[25px] font-black leading-[1.18] tracking-tight text-slate-950">
             今天，先从<br />
             <span className="text-emerald-700">一个好问题</span>开始。
@@ -138,14 +133,39 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div ref={mascotRef} className="absolute right-3 top-[52px] z-10 grid h-[94px] w-[94px] place-items-center" aria-hidden="true">
           <div className="absolute inset-0 rounded-full border border-emerald-500/35" />
           <div className="absolute inset-2 rounded-full bg-white/55" />
-          <svg viewBox="0 0 100 100" className="relative h-[76px] w-[76px] drop-shadow-sm" fill="none">
-            <path d="M50 13V6" stroke="#0f8a63" strokeWidth="2" strokeLinecap="round" />
-            <path d="m50 3 2 4 4 2-4 2-2 4-2-4-4-2 4-2 2-4Z" fill="#f4bd3d" />
-            <rect x="18" y="20" width="64" height="58" rx="13" fill="#fff" stroke="#74c9aa" strokeWidth="5" />
-            <circle cx="39" cy="47" r="5" fill="#1d8161" />
-            <circle cx="61" cy="47" r="5" fill="#1d8161" />
-            <path d="M38 61c3 7 21 7 24 0" stroke="#1d8161" strokeWidth="3" strokeLinecap="round" />
-            <path d="M28 81h44" stroke="#93d3bb" strokeWidth="7" strokeLinecap="round" opacity=".55" />
+          <svg viewBox="0 0 120 120" className="relative h-[86px] w-[86px] drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="homeRobotHeadGrad" x1="20" y1="20" x2="100" y2="80" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="100%" stopColor="#E6F4EA" />
+              </linearGradient>
+              <linearGradient id="homeRobotVisorGrad" x1="30" y1="35" x2="90" y2="70" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#0F172A" />
+                <stop offset="100%" stopColor="#022C22" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="60" cy="18" rx="16" ry="4" stroke="#FBBF24" strokeWidth="2" />
+            <polygon points="60,11 80,17 60,23 40,17" fill="#047857" />
+            <rect x="58" y="9" width="4" height="4" fill="#FBBF24" />
+            <path d="M76 18 82 27" stroke="#FBBF24" strokeWidth="1.5" strokeLinecap="round" />
+            <rect x="20" y="44" width="8" height="20" rx="4" fill="#10B981" />
+            <rect x="92" y="44" width="8" height="20" rx="4" fill="#10B981" />
+            <circle cx="24" cy="54" r="2.5" fill="#34D399" />
+            <circle cx="96" cy="54" r="2.5" fill="#34D399" />
+            <rect x="26" y="26" width="68" height="56" rx="24" fill="url(#homeRobotHeadGrad)" stroke="#10B981" strokeWidth="2.5" />
+            <rect x="34" y="35" width="52" height="38" rx="16" fill="url(#homeRobotVisorGrad)" />
+            <path d="M38 40c12-3 32-3 44 0-10 3-34 3-44 0Z" fill="#FFFFFF" opacity=".15" />
+            <ellipse cx="48" cy="52" rx="5" ry="6" fill="#38BDF8" />
+            <circle cx="49" cy="50" r="2" fill="#FFFFFF" />
+            <ellipse cx="72" cy="52" rx="5" ry="6" fill="#38BDF8" />
+            <circle cx="73" cy="50" r="2" fill="#FFFFFF" />
+            <circle cx="48" cy="52" r="9" stroke="#FBBF24" strokeWidth="2" />
+            <circle cx="72" cy="52" r="9" stroke="#FBBF24" strokeWidth="2" />
+            <path d="M57 52h6M39 51l-6-2M81 51l6-2" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" />
+            <path d="M55 63q5 4 10 0" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" />
+            <path d="M44 84h32l-6 18H50l-6-18Z" fill="#059669" />
+            <circle cx="60" cy="92" r="3.5" fill="#FBBF24" />
+            <path d="m52 84 8 8 8-8" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" opacity=".8" />
           </svg>
         </div>
 
