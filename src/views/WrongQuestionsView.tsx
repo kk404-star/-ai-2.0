@@ -31,9 +31,14 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
   const [subjectFilter, setSubjectFilter] = useState<string>(currentSubject);
   const [selectedWeakTitle, setSelectedWeakTitle] = useState<string | null>(null);
   const [expandedWrongIds, setExpandedWrongIds] = useState<string[]>([]);
+  const [expandedBankIds, setExpandedBankIds] = useState<string[]>([]);
 
   const toggleWrongQuestion = (id: string) => {
     setExpandedWrongIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+  };
+
+  const toggleBankQuestion = (id: string) => {
+    setExpandedBankIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   };
 
   const weakKnowledgeItems = useMemo(() => {
@@ -89,7 +94,65 @@ export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
           </div>
         </div>
         <div className="space-y-2.5">
-          {bankQuestions.map((question, index) => <div key={question.id} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs"><div className="flex items-center justify-between gap-2"><span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700"><BookOpen className="h-3.5 w-3.5" />第 {index + 1} 题</span></div><p className="mt-2 line-clamp-2 text-xs font-bold leading-relaxed text-slate-900">{question.questionText}</p><p className="mt-2 truncate text-[10px] font-medium text-slate-400">考点：{question.knowledgePoint}</p></div>)}
+          {bankQuestions.map((question, index) => {
+            const isExpanded = expandedBankIds.includes(question.id);
+            const answer = question.correctOptionKey || question.sampleFinalAnswer || '请参考标准解题过程';
+            return (
+              <div key={question.id} className={`overflow-hidden rounded-2xl border bg-white shadow-2xs transition-colors ${isExpanded ? 'border-emerald-300' : 'border-slate-200/80 hover:border-emerald-200'}`}>
+                <button
+                  type="button"
+                  onClick={() => toggleBankQuestion(question.id)}
+                  aria-expanded={isExpanded}
+                  className="w-full p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700"><BookOpen className="h-3.5 w-3.5" />第 {index + 1} 题</span>
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                      {isExpanded ? '收起详情' : '查看答案与解析'}
+                      {isExpanded ? <ChevronUp className="h-4 w-4 text-emerald-600" /> : <ChevronDown className="h-4 w-4" />}
+                    </span>
+                  </div>
+                  <p className={`mt-2 text-xs font-bold leading-relaxed text-slate-900 ${isExpanded ? '' : 'line-clamp-2'}`}>{question.questionText}</p>
+                  <p className="mt-2 truncate text-[10px] font-medium text-slate-400">考点：{question.knowledgePoint}</p>
+                </button>
+
+                {isExpanded && (
+                  <div className="space-y-4 border-t border-slate-100 px-4 pb-4 pt-3 animate-fade-in">
+                    {question.options?.length ? (
+                      <div className="space-y-2">
+                        <p className="text-xs font-black text-slate-700">题目选项</p>
+                        <div className="grid gap-2 md:grid-cols-2">
+                          {question.options.map((option) => {
+                            const isCorrect = option.key === question.correctOptionKey;
+                            return (
+                              <div key={option.key} className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium ${isCorrect ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
+                                <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-black ${isCorrect ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200'}`}>{option.key}</span>
+                                <span>{option.text}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                      <p className="text-[10px] font-bold text-emerald-700/70">正确答案</p>
+                      <p className="mt-1 text-sm font-black text-emerald-900">{answer}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="flex items-center gap-1.5 text-xs font-black text-slate-800"><Sparkles className="h-4 w-4 text-emerald-600" />题目解析</p>
+                      <div className="space-y-1.5 rounded-xl bg-slate-50 p-3 text-xs font-medium leading-5 text-slate-600">
+                        {question.sampleStepSolution?.length
+                          ? question.sampleStepSolution.map((step, stepIndex) => <p key={stepIndex}>{step}</p>)
+                          : <p>{question.aiHint || '根据题目条件逐步分析，得出上述正确答案。'}</p>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
           {bankQuestions.length === 0 && <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center"><BookOpen className="mx-auto h-9 w-9 text-slate-300" /><p className="mt-2 text-sm font-bold text-slate-700">该知识点暂无匹配题目</p></div>}
         </div>
       </div>
