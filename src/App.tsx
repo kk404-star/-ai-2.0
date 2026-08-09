@@ -482,6 +482,15 @@ export default function App() {
     if (activeScreen === 'knowledge_study') {
       return (
         <KnowledgeStudyView
+          relatedWrongQuestionCount={wrongQuestions.filter((item) => {
+            if (!selectedKnowledgePointTitle) return false;
+            const normalize = (value: string) => value.replace(/[\s的与及··、（）()]/g, '').toLowerCase();
+            const selectedTitle = normalize(selectedKnowledgePointTitle);
+            return (item.knowledgePoints?.length ? item.knowledgePoints : [item.topic]).some((label) => {
+              const normalizedLabel = normalize(label);
+              return selectedTitle.includes(normalizedLabel) || normalizedLabel.includes(selectedTitle);
+            });
+          }).length}
           knowledgePoint={selectedKnowledgePointTitle
             ? {
                 ...sampleKnowledgePoint,

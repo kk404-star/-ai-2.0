@@ -15,6 +15,7 @@ import { ChatMessage, KnowledgePoint } from '../types';
 
 interface KnowledgeStudyViewProps {
   knowledgePoint: KnowledgePoint;
+  relatedWrongQuestionCount: number;
   onNavigateToQuiz: () => void;
   onMarkAsLearned: () => void;
   onStartTargetedPractice: () => void;
@@ -22,6 +23,7 @@ interface KnowledgeStudyViewProps {
 
 export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
   knowledgePoint,
+  relatedWrongQuestionCount,
   onNavigateToQuiz,
   onMarkAsLearned,
   onStartTargetedPractice,
@@ -167,28 +169,45 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
           />
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            if (knowledgePoint.masteryState === '未学习' || knowledgePoint.masteryState === '学习中') {
-              setLearnedModalPhase('confirm');
-              return;
-            }
-            onStartTargetedPractice();
-          }}
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-[0.99]"
-        >
-          {knowledgePoint.masteryState === '未学习' || knowledgePoint.masteryState === '学习中' ? (
-            <>
-              <GraduationCap className="h-4 w-4" />
-              我已在学校学过，直接练题
-            </>
-          ) : (
-            <>
-              去练习巩固 <ArrowRight className="h-4 w-4" />
-            </>
-          )}
-        </button>
+        <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+          <dl className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
+            <div className="flex items-center gap-1">
+              <dt className="font-bold text-emerald-800">关联错题</dt>
+              <dd className="font-medium text-slate-500">{relatedWrongQuestionCount} 道</dd>
+            </div>
+            <div className="flex items-center gap-1">
+              <dt className="font-bold text-emerald-800">状态</dt>
+              <dd className="font-medium text-slate-500">{knowledgePoint.masteryState}</dd>
+            </div>
+            <div className="flex items-center gap-1">
+              <dt className="font-bold text-emerald-800">建议时长</dt>
+              <dd className="font-medium text-slate-500">25 分钟</dd>
+            </div>
+          </dl>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (knowledgePoint.masteryState === '未学习' || knowledgePoint.masteryState === '学习中') {
+                setLearnedModalPhase('confirm');
+                return;
+              }
+              onStartTargetedPractice();
+            }}
+            className="flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-500 bg-white px-3 text-[11px] font-black text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-95"
+          >
+            {knowledgePoint.masteryState === '未学习' || knowledgePoint.masteryState === '学习中' ? (
+              <>
+                <GraduationCap className="h-3.5 w-3.5" />
+                标记已学
+              </>
+            ) : (
+              <>
+                去练习 <ArrowRight className="h-3.5 w-3.5" />
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Chat Dialogue */}
@@ -346,7 +365,7 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-[0.98]"
                 >
                   <Check className="h-4 w-4" strokeWidth={2.5} />
-                  标记已学并练题
+                  确认标记
                 </button>
               ) : (
                 <button
