@@ -119,8 +119,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   };
 
   return (
-    <div className="min-h-full space-y-4 px-4 pb-28 pt-3 animate-fade-in">
-      <section className="relative overflow-hidden rounded-[26px] border border-emerald-100 bg-[linear-gradient(135deg,#edf9f2_0%,#ddf3e8_62%,#c8eadb_100%)] px-5 pb-5 pt-5 shadow-[0_12px_34px_-24px_rgba(5,150,105,0.42)]">
+    <div className="min-h-full space-y-4 px-4 pb-28 pt-3 animate-fade-in md:grid md:grid-cols-12 md:items-stretch md:gap-5 md:space-y-0 md:px-8 md:pt-6 lg:px-10">
+      <section className="relative overflow-hidden rounded-[26px] border border-emerald-100 bg-[linear-gradient(135deg,#edf9f2_0%,#ddf3e8_62%,#c8eadb_100%)] px-5 pb-5 pt-5 shadow-[0_12px_34px_-24px_rgba(5,150,105,0.42)] md:col-span-7 md:min-h-[248px] md:px-8 md:py-7">
         <div className="absolute -right-12 -top-16 h-40 w-40 rounded-full border border-emerald-300/35" />
         <div className="absolute -right-5 -top-6 h-28 w-28 rounded-full bg-white/35" />
 
@@ -194,7 +194,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         type="button"
         onClick={() => setIsCalendarOpen(true)}
         aria-label="查看打卡日历与学习诊断"
-        className="w-full rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-[0_8px_30px_-24px_rgba(15,23,42,0.35)] transition hover:border-emerald-200 hover:shadow-[0_12px_34px_-24px_rgba(5,150,105,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-[0.99]"
+        className="w-full rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-[0_8px_30px_-24px_rgba(15,23,42,0.35)] transition hover:border-emerald-200 hover:shadow-[0_12px_34px_-24px_rgba(5,150,105,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-[0.99] md:col-span-5 md:min-h-[248px] md:p-6"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -237,7 +237,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </button>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_30px_-24px_rgba(15,23,42,0.35)]">
+      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_30px_-24px_rgba(15,23,42,0.35)] md:col-span-12 md:mt-0">
         <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-4">
           <div>
             <p className="text-[10px] font-black tracking-[0.1em] text-emerald-700/65">学伴为你推荐知识点</p>

@@ -32,6 +32,7 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
   const [isSending, setIsSending] = useState(false);
   const [masteryProgress, setMasteryProgress] = useState(knowledgePoint.progressPercent || 45);
   const [learnedModalPhase, setLearnedModalPhase] = useState<'confirm' | 'success' | null>(null);
+  const [hasConfirmedLearned, setHasConfirmedLearned] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -155,18 +156,8 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
     <div className="px-5 pt-4 pb-36 space-y-4 animate-fade-in">
       {/* Knowledge Title & Mastery Header */}
       <div className="bg-white p-4 rounded-2xl card-shadow border border-slate-200/80 space-y-3">
-        <div className="flex justify-between items-center text-xs">
+        <div className="text-xs">
           <span className="font-bold text-slate-900 text-sm">{knowledgePoint.title}</span>
-          <span className="font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full text-[11px]">
-            {knowledgePoint.masteryState} · 学习进度 {masteryProgress}%
-          </span>
-        </div>
-
-        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-            style={{ width: `${masteryProgress}%` }}
-          />
         </div>
 
         <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
@@ -179,16 +170,12 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
               <dt className="font-bold text-emerald-800">状态</dt>
               <dd className="font-medium text-slate-500">{knowledgePoint.masteryState}</dd>
             </div>
-            <div className="flex items-center gap-1">
-              <dt className="font-bold text-emerald-800">建议时长</dt>
-              <dd className="font-medium text-slate-500">25 分钟</dd>
-            </div>
           </dl>
 
           <button
             type="button"
             onClick={() => {
-              if (knowledgePoint.masteryState === '未学习' || knowledgePoint.masteryState === '学习中') {
+              if (!hasConfirmedLearned) {
                 setLearnedModalPhase('confirm');
                 return;
               }
@@ -196,7 +183,7 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
             }}
             className="flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-500 bg-white px-3 text-[11px] font-black text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-95"
           >
-            {knowledgePoint.masteryState === '未学习' || knowledgePoint.masteryState === '学习中' ? (
+            {!hasConfirmedLearned ? (
               <>
                 <GraduationCap className="h-3.5 w-3.5" />
                 标记已学
@@ -296,14 +283,16 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
           />
         </div>
 
-        <div className="flex gap-2 pt-1">
-          <button
-            onClick={onNavigateToQuiz}
-            className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
-          >
-            进入题目练习巩固 <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
+        {hasConfirmedLearned && (
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={onNavigateToQuiz}
+              className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
+            >
+              进入题目练习巩固 <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {learnedModalPhase && (
@@ -360,6 +349,7 @@ export const KnowledgeStudyView: React.FC<KnowledgeStudyViewProps> = ({
                   type="button"
                   onClick={() => {
                     onMarkAsLearned();
+                    setHasConfirmedLearned(true);
                     setLearnedModalPhase('success');
                   }}
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-[0.98]"

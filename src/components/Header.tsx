@@ -16,7 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isTabScreen = currentScreen === 'tab';
   const resolvedTitle = screenTitle ?? '开窍 AI 学伴';
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-100 bg-white/95 px-5 glass-nav">
+    <header className="sticky top-0 z-40 mx-auto flex h-14 w-full items-center justify-between border-b border-slate-100 bg-white/95 px-5 glass-nav md:h-16 md:px-8 lg:px-10">
       {/* Left side */}
       <div className="flex items-center gap-2">
         {!isTabScreen && onBack ? (
@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
         ) : null}
 
         {resolvedTitle && (
-          <h1 className="text-base font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-base font-extrabold tracking-tight text-slate-900 md:text-lg">
             {resolvedTitle}
           </h1>
         )}

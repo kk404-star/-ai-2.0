@@ -7,6 +7,7 @@ export type ScreenType =
   | 'correction_detail' 
   | 'instant_learning' 
   | 'practice_quiz' 
+  | 'today_practice'
   | 'diagnostic_report' 
   | 'parent_binding'
   | 'profile_details';

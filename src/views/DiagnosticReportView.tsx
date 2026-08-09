@@ -475,7 +475,7 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs">
             <div>
               <span className="font-bold text-slate-900">1. 复习最新错题</span>
-              <p className="text-[11px] text-slate-500 mt-0.5">针对近期错题本中的去括号计算失误进行强化</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">针对近期错题归纳中的去括号计算失误进行强化</p>
             </div>
             <button
               onClick={() => onNavigateToScreen('instant_learning')}

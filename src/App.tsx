@@ -315,6 +315,8 @@ export default function App() {
       case 'practice':
       case 'practice_quiz':
         return '考点真题练习';
+      case 'today_practice':
+        return '今日学习';
       case 'diagnostic_report':
         return '学习诊断报告';
       case 'parent_binding':
@@ -323,7 +325,7 @@ export default function App() {
         return '个人资料';
       default:
         if (activeTab === 'study') return '知识点学习';
-        if (activeTab === 'wrong') return '错题本';
+        if (activeTab === 'wrong') return '错题归纳';
         if (activeTab === 'profile') return '个人中心';
         return '开窍 AI 学伴';
     }
@@ -555,7 +557,7 @@ export default function App() {
       );
     }
 
-    if (activeScreen === 'practice' || activeScreen === 'practice_quiz') {
+    if (activeScreen === 'practice' || activeScreen === 'practice_quiz' || activeScreen === 'today_practice') {
       return (
         <PracticeView
           question={sampleQuizQuestion}
@@ -564,6 +566,7 @@ export default function App() {
           questionBank={questionBank}
           currentSubject={student.currentSubject}
           questionBankOnly={activeTab === 'wrong' && wrongWorkspaceMode === 'bank'}
+          deferredResults={activeScreen === 'today_practice'}
           learnedKnowledgePointTitles={learningEvidence.knowledgePoints
             .filter((point) => point.subject === student.currentSubject && (point.status === '已学习' || point.status === '已练习'))
             .map((point) => point.title)}
@@ -621,7 +624,7 @@ export default function App() {
             recommendations={homeRecommendations}
             onStartTodayLearning={() => {
               selectKnowledgePoint('');
-              setActiveScreen('practice');
+              setActiveScreen('today_practice');
             }}
             onOpenKnowledgePoint={(title, code) => {
               selectKnowledgePoint(title, code);
@@ -705,7 +708,7 @@ export default function App() {
       />
 
       {/* Main View Area */}
-      <main className="flex-1 flex flex-col">{renderContent()}</main>
+      <main className="app-main flex flex-1 flex-col">{renderContent()}</main>
 
       {/* Glassmorphism Bottom Navigation Bar (Visible in Tab mode) */}
       {activeScreen === 'tab' && (

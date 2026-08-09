@@ -333,7 +333,7 @@ export const initialCorrectionHistory: CorrectionRecord[] = [
       '4. 最终求和：9 - 6 + 1 = 4。'
     ],
     knowledgePoints: ['函数求值', '二次函数', '代数运算'],
-    encouragement: '“这道题的核心是函数的代入运算。虽然思路正确，但计算时要小心哦。可以先加入错题本，系统会在合适的时间安排复习。”'
+    encouragement: '“这道题的核心是函数的代入运算。虽然思路正确，但计算时要小心哦。可以先加入错题归纳，系统会在合适的时间安排复习。”'
   },
   {
     id: 'cr-2',

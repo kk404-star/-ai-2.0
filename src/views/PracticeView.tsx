@@ -28,6 +28,7 @@ interface PracticeViewProps {
   learnedKnowledgePointTitles?: string[];
   currentSubject?: SubjectType;
   questionBankOnly?: boolean;
+  deferredResults?: boolean;
   onNavigateToScreen: (screen: ScreenType) => void;
   onCompleteQuiz?: (completedQuestionIds: string[]) => void;
   onQuestionCompleted?: (questionId: string) => void;
@@ -43,6 +44,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   learnedKnowledgePointTitles = [],
   currentSubject,
   questionBankOnly = false,
+  deferredResults = false,
   onNavigateToScreen,
   onCompleteQuiz,
   onQuestionCompleted,
@@ -98,9 +100,14 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
       const selectedWrong = wrongPool.slice(0, 2);
       const selectedBank = learnedBankPool.slice(0, Math.max(0, 5 - selectedWrong.length));
       const remainingWrong = wrongPool.slice(selectedWrong.length, selectedWrong.length + Math.max(0, 5 - selectedWrong.length - selectedBank.length));
-      const total = selectedWrong.length + selectedBank.length + remainingWrong.length;
-      const wrongQuizQuestions = [...selectedWrong, ...remainingWrong].map((item, index) => toWrongQuestion(item, index, total));
-      return [...wrongQuizQuestions, ...selectedBank].map((item, index) => ({ ...item, questionNumber: index + 1, totalQuestions: total }));
+      const wrongQuizQuestions = [...selectedWrong, ...remainingWrong].map((item, index) => toWrongQuestion(item, index, 5));
+      const selected = [...wrongQuizQuestions, ...selectedBank];
+      const selectedIds = new Set(selected.map((item) => item.id));
+      const fallbackBank = availableQuestionBank.filter((item) =>
+        (!currentSubject || item.subject === currentSubject) && !selectedIds.has(item.id)
+      );
+      const todayQuestions = [...selected, ...fallbackBank].slice(0, 5);
+      return todayQuestions.map((item, index) => ({ ...item, questionNumber: index + 1, totalQuestions: todayQuestions.length }));
     }
 
     const matchedWrongQuestions = wrongQuestions.filter((item) =>
@@ -139,12 +146,27 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   // Track answered questions status across all questions
   const [answeredQuestions, setAnsweredQuestions] = useState<Record<number, boolean>>({});
   const [questionResults, setQuestionResults] = useState<Record<number, boolean>>({});
+  const [submittedAnswers, setSubmittedAnswers] = useState<Record<number, string>>({});
+  const [answerDrafts, setAnswerDrafts] = useState<Record<number, {
+    selectedKey: string | null;
+    fillAnswers: string;
+    essayStepsInput: string;
+    uploadedImages: string[];
+  }>>({});
+  const [showBatchResults, setShowBatchResults] = useState(false);
   // Question sheet modal
   const [showAnswerSheet, setShowAnswerSheet] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentType: QuestionType = currentQuestion.questionType || (currentQuestion.options ? '选择题' : '解答题');
+  const correctCount = Object.values(questionResults).filter(Boolean).length;
+  const wrongCount = Math.max(0, questions.length - correctCount);
+  const resultFeedback = correctCount === questions.length
+    ? '今天的知识点掌握得很稳，保持这个节奏！'
+    : correctCount >= Math.ceil(questions.length * 0.6)
+      ? '整体表现不错，把错题再巩固一遍，会更扎实。'
+      : '没关系，今天已经找到了需要补强的地方，继续加油！';
 
   const handleNextQuestion = () => {
     if (activeQuestionIndex < questions.length - 1) {
@@ -155,6 +177,10 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
       setEssayStepsInput('');
       setUploadedImages([]);
     } else {
+      if (deferredResults) {
+        setShowBatchResults(true);
+        return;
+      }
       if (onCompleteQuiz) onCompleteQuiz(getCompletedQuestionIds());
       onNavigateToScreen('tab');
     }
@@ -198,16 +224,29 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
     setIsSubmitted(true);
     setAnsweredQuestions((prev) => ({ ...prev, [activeQuestionIndex]: true }));
     setQuestionResults((prev) => ({ ...prev, [activeQuestionIndex]: isCorrect }));
-    onQuestionCompleted?.(currentQuestion.id);
+    setSubmittedAnswers((prev) => ({
+      ...prev,
+      [activeQuestionIndex]: currentType === '选择题' || currentType === '判断题'
+        ? selectedKey || '未作答'
+        : currentType === '填空题'
+          ? fillAnswers.trim()
+          : essayStepsInput.trim() || `已上传 ${uploadedImages.length} 张作答图片`,
+    }));
+    setAnswerDrafts((prev) => ({
+      ...prev,
+      [activeQuestionIndex]: { selectedKey, fillAnswers, essayStepsInput, uploadedImages },
+    }));
+    if (!deferredResults) onQuestionCompleted?.(currentQuestion.id);
   };
 
   const jumpToQuestion = (idx: number) => {
     setActiveQuestionIndex(idx);
     setIsSubmitted(!!answeredQuestions[idx]);
-    setSelectedKey(null);
-    setFillAnswers('');
-    setEssayStepsInput('');
-    setUploadedImages([]);
+    const draft = answerDrafts[idx];
+    setSelectedKey(draft?.selectedKey || null);
+    setFillAnswers(draft?.fillAnswers || '');
+    setEssayStepsInput(draft?.essayStepsInput || '');
+    setUploadedImages(draft?.uploadedImages || []);
     setShowAnswerSheet(false);
   };
 
@@ -248,11 +287,11 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
                 key={q.id}
                 onClick={() => jumpToQuestion(idx)}
                 className={`w-7 h-7 rounded-lg text-xs font-black transition-all flex items-center justify-center shrink-0 ${
-                  isCurrent && isSubmitted && isCorrect === false
+                  !deferredResults && isCurrent && isSubmitted && isCorrect === false
                     ? 'bg-rose-500 text-white shadow-2xs scale-105'
                     : isCurrent
                     ? 'bg-emerald-600 text-white shadow-2xs scale-105'
-                    : isAnswered
+                    : isAnswered && !deferredResults
                     ? isCorrect
                       ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300/80'
                       : 'bg-rose-50 text-rose-700 font-bold border border-rose-300/80'
@@ -260,7 +299,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
                     ? 'bg-blue-50 text-blue-700 border border-blue-200'
                     : 'bg-transparent text-slate-600 hover:bg-slate-200/60'
                 }`}
-                title={`第 ${idx + 1} 题 ${isAnswered ? (isCorrect ? '(答对)' : '(答错)') : wasPracticed ? '(已练习)' : '(未练习)'}`}
+                title={`第 ${idx + 1} 题 ${isAnswered ? '(已作答)' : wasPracticed ? '(已练习)' : '(未练习)'}`}
               >
                 {idx + 1}
               </button>
@@ -332,8 +371,8 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
           <div className="grid grid-cols-1 gap-2.5">
             {currentQuestion.options?.map((opt) => {
               const isSelected = selectedKey === opt.key;
-              const isCorrect = isSubmitted && opt.key === currentQuestion.correctOptionKey;
-              const isWrong = isSubmitted && isSelected && opt.key !== currentQuestion.correctOptionKey;
+              const isCorrect = !deferredResults && isSubmitted && opt.key === currentQuestion.correctOptionKey;
+              const isWrong = !deferredResults && isSubmitted && isSelected && opt.key !== currentQuestion.correctOptionKey;
 
               return (
                 <button
@@ -372,7 +411,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
           </div>
 
           {/* Analysis Card */}
-          {isSubmitted && (
+          {isSubmitted && !deferredResults && (
             <div className="bg-emerald-50/80 p-4 rounded-2xl border border-emerald-200/80 text-xs text-slate-800 space-y-2 animate-fade-in mt-3">
               <div className="flex items-center gap-1.5 font-bold text-sm">
                 {selectedKey === currentQuestion.correctOptionKey ? (
@@ -409,7 +448,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
             />
           </div>
 
-          {isSubmitted && (
+          {isSubmitted && !deferredResults && (
             <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200/80 text-xs text-slate-800 space-y-2 animate-fade-in">
               <p className="font-bold text-sm text-emerald-900 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -521,7 +560,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
             )}
           </div>
 
-          {isSubmitted && (
+          {isSubmitted && !deferredResults && (
             <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200/80 text-xs text-slate-800 space-y-2 animate-fade-in">
               <p className="font-bold text-sm text-emerald-900 flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-emerald-600" />
@@ -544,7 +583,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
             onClick={handleNextQuestion}
             className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-98 transition-all"
           >
-            <span>{activeQuestionIndex < questions.length - 1 ? '下一题' : '完成本次练习'}</span>
+            <span>{activeQuestionIndex < questions.length - 1 ? '下一题' : deferredResults ? '查看全部答案' : '完成本次练习'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         ) : (
@@ -557,6 +596,85 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
           </button>
         )}
       </div>
+
+      {showBatchResults && (
+        <div className="fixed inset-0 z-[70] overflow-y-auto bg-slate-50 px-5 py-6 animate-fade-in">
+          <div className="mx-auto w-full max-w-md space-y-4">
+            <div className="rounded-2xl bg-emerald-700 p-5 text-white shadow-lg">
+              <p className="text-[10px] font-black tracking-[0.14em] text-emerald-100">今日学习已交卷</p>
+              <h2 className="mt-1 text-xl font-black">今日练习完成</h2>
+              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl bg-white/10 px-2 py-2.5">
+                  <span className="block text-lg font-black">{questions.length}</span>
+                  <span className="text-[9px] font-bold text-emerald-100">完成题数</span>
+                </div>
+                <div className="rounded-xl bg-white/10 px-2 py-2.5">
+                  <span className="block text-lg font-black text-emerald-100">{correctCount}</span>
+                  <span className="text-[9px] font-bold text-emerald-100">答对</span>
+                </div>
+                <div className="rounded-xl bg-white/10 px-2 py-2.5">
+                  <span className="block text-lg font-black text-amber-200">{wrongCount}</span>
+                  <span className="text-[9px] font-bold text-emerald-100">答错</span>
+                </div>
+              </div>
+              <div className="mt-3 flex items-start gap-2 rounded-xl bg-white/10 p-3">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                <p className="text-xs font-bold leading-5 text-white">{resultFeedback}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-sm font-black text-slate-900">5 题答案与解析</h3>
+              <span className="text-[10px] font-bold text-slate-400">一次性公布</span>
+            </div>
+
+            <div className="space-y-3">
+              {questions.map((item, index) => {
+                const correctAnswer = item.correctOptionKey || item.sampleFinalAnswer || '请查看标准解题步骤';
+                return (
+                  <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs font-black text-slate-900">第 {index + 1} 题</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${questionResults[index] ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-600'}`}>
+                        {questionResults[index] ? '正确' : '需要巩固'}
+                      </span>
+                    </div>
+                    <p className="mt-2 line-clamp-2 text-xs font-bold leading-5 text-slate-700">{item.questionText}</p>
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                      <div className="rounded-xl bg-slate-50 p-2.5">
+                        <span className="block text-[9px] font-bold text-slate-400">你的答案</span>
+                        <span className="mt-1 block font-black text-slate-700">{submittedAnswers[index] || '未作答'}</span>
+                      </div>
+                      <div className="rounded-xl bg-emerald-50 p-2.5">
+                        <span className="block text-[9px] font-bold text-emerald-700/60">正确答案</span>
+                        <span className="mt-1 block font-black text-emerald-800">{correctAnswer}</span>
+                      </div>
+                    </div>
+                    {item.sampleStepSolution?.length ? (
+                      <div className="mt-3 border-t border-slate-100 pt-3 text-[11px] leading-5 text-slate-500">
+                        {item.sampleStepSolution.map((step, stepIndex) => <p key={stepIndex}>{step}</p>)}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const completedIds = getCompletedQuestionIds();
+                onCompleteQuiz?.(completedIds);
+                completedIds.forEach((id) => onQuestionCompleted?.(id));
+                onNavigateToScreen('tab');
+              }}
+              className="h-12 w-full rounded-xl bg-emerald-600 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 active:scale-[0.98]"
+            >
+              完成今日学习
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Diagram Zoom Modal */}
       {showDiagramModal && (
