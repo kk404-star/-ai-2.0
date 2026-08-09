@@ -50,6 +50,7 @@ import {
   toLocalDateKey,
   WRONG_QUESTIONS_STORAGE_KEY,
 } from './utils/wrongReview';
+import { getHomeRecommendations } from './utils/homeRecommendations';
 
 export default function App() {
   const todayTaskDate = toLocalDateKey();
@@ -190,6 +191,11 @@ export default function App() {
         + selectedBank.filter((item) => completedTodayTaskIds.has(item.id) || item.practiceStatus === '已练习').length,
     };
   }, [completedTodayTaskIds, learningEvidence.knowledgePoints, questionBank, student.currentSubject, wrongQuestions]);
+
+  const homeRecommendations = useMemo(
+    () => getHomeRecommendations(knowledgeTree, student.currentSubject, 3),
+    [knowledgeTree, student.currentSubject],
+  );
 
   useEffect(() => {
     if (activeScreen !== 'knowledge_study' || !selectedKnowledgePointCode) return;
@@ -606,12 +612,25 @@ export default function App() {
         return (
           <HomeView
             student={student}
-            tasks={tasks}
             todayTaskCompleted={todayTaskProgress.completed}
             todayTaskTotal={todayTaskProgress.total}
-            onNavigateToScreen={(screen) => setActiveScreen(screen)}
-            onOpenReport={() => setActiveScreen('diagnostic_report')}
-            onSelectKnowledgePointForPractice={(title) => selectKnowledgePoint(title)}
+            recommendations={homeRecommendations}
+            onStartTodayLearning={() => {
+              selectKnowledgePoint('');
+              setActiveScreen('practice');
+            }}
+            onOpenKnowledgePoint={(title, code) => {
+              selectKnowledgePoint(title, code);
+              setActiveScreen('knowledge_study');
+            }}
+            onPracticeKnowledgePoint={(title, code) => {
+              selectKnowledgePoint(title, code);
+              setActiveScreen('practice');
+            }}
+            onOpenStudyCatalog={() => {
+              setActiveScreen('tab');
+              setActiveTab('study');
+            }}
           />
         );
 
