@@ -78,7 +78,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
       </div>
 
       {/* Generated Knowledge Cards from the unified evidence base */}
-      {subjectKnowledgeCards.length > 0 && (
+      {false && subjectKnowledgeCards.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold text-slate-800">我的知识卡片</h2>
