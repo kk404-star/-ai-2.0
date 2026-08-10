@@ -57,7 +57,6 @@ export default function App() {
   const todayTaskDate = toLocalDateKey();
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [activeScreen, setActiveScreen] = useState<ScreenType>('tab');
-  const [wrongWorkspaceMode, setWrongWorkspaceMode] = useState<'wrong' | 'bank'>('wrong');
 
   const [student, setStudent] = useState<StudentProfile>(initialProfile);
   const [tasks, setTasks] = useState(initialTasks);
@@ -194,7 +193,7 @@ export default function App() {
   }, [completedTodayTaskIds, learningEvidence.knowledgePoints, questionBank, student.currentSubject, wrongQuestions]);
 
   const homeRecommendations = useMemo(
-    () => getHomeRecommendations(knowledgeTree, student.currentSubject, 3),
+    () => getHomeRecommendations(knowledgeTree, student.currentSubject, 5),
     [knowledgeTree, student.currentSubject],
   );
 
@@ -254,7 +253,6 @@ export default function App() {
 
   const openQuestionBank = (title: string, code?: string) => {
     selectKnowledgePoint(title, code);
-    setWrongWorkspaceMode('bank');
     setActiveTab('wrong');
     setActiveScreen('practice');
   };
@@ -325,7 +323,7 @@ export default function App() {
         return '个人资料';
       default:
         if (activeTab === 'study') return '知识点学习';
-        if (activeTab === 'wrong') return '错题归纳';
+        if (activeTab === 'wrong') return '错题本';
         if (activeTab === 'profile') return '个人中心';
         return '开窍 AI 学伴';
     }
@@ -514,14 +512,9 @@ export default function App() {
       return (
         <PhotoScanView
           records={correctionHistory}
-          wrongQuestions={wrongQuestions}
           onNavigateToDetail={(rec) => {
             setSelectedCorrection(rec);
             setActiveScreen('correction_detail');
-          }}
-          onOpenWrongQuestion={(question) => {
-            selectWrongQuestion(question);
-            setActiveScreen('instant_learning');
           }}
         />
       );
@@ -560,17 +553,23 @@ export default function App() {
     if (activeScreen === 'practice' || activeScreen === 'practice_quiz' || activeScreen === 'today_practice') {
       return (
         <PracticeView
+          key={`${activeScreen}-${selectedKnowledgePointCode || selectedKnowledgePointTitle || 'all'}`}
           question={sampleQuizQuestion}
           knowledgePointTitle={selectedKnowledgePointTitle}
           wrongQuestions={wrongQuestions}
           questionBank={questionBank}
           currentSubject={student.currentSubject}
-          questionBankOnly={activeTab === 'wrong' && wrongWorkspaceMode === 'bank'}
+          questionBankOnly={activeTab === 'wrong'}
           deferredResults={activeScreen === 'today_practice'}
           learnedKnowledgePointTitles={learningEvidence.knowledgePoints
             .filter((point) => point.subject === student.currentSubject && (point.status === '已学习' || point.status === '已练习'))
             .map((point) => point.title)}
           onNavigateToScreen={(screen) => setActiveScreen(screen)}
+          onContinueQuestionBank={() => {
+            selectKnowledgePoint('');
+            setActiveTab('wrong');
+            setActiveScreen('practice_quiz');
+          }}
           onCompleteQuiz={handleCompleteQuiz}
           onQuestionCompleted={(questionId) => {
             setCompletedTodayTaskIds((current) => new Set([...current, questionId]));
@@ -586,14 +585,6 @@ export default function App() {
         <DiagnosticReportView
           student={student}
           learningEvidence={learningEvidence}
-          onNavigateToScreen={(screen) => {
-            if (screen === 'practice' || screen === 'practice_quiz') selectKnowledgePoint('');
-            if (screen === 'instant_learning') {
-              const reviewItem = todayReviewQuestions[0] || wrongQuestions.find((item) => item.reviewStatus !== '已掌握');
-              if (reviewItem) selectWrongQuestion(reviewItem);
-            }
-            setActiveScreen(screen);
-          }}
         />
       );
     }
@@ -622,6 +613,7 @@ export default function App() {
             todayTaskCompleted={todayTaskProgress.completed}
             todayTaskTotal={todayTaskProgress.total}
             recommendations={homeRecommendations}
+            wrongQuestions={wrongQuestions}
             onStartTodayLearning={() => {
               selectKnowledgePoint('');
               setActiveScreen('today_practice');
@@ -630,15 +622,10 @@ export default function App() {
               selectKnowledgePoint(title, code);
               setActiveScreen('knowledge_study');
             }}
-            onPracticeKnowledgePoint={(title, code) => {
-              selectKnowledgePoint(title, code);
-              setActiveScreen('practice');
-            }}
             onOpenStudyCatalog={() => {
               setActiveScreen('tab');
               setActiveTab('study');
             }}
-            onOpenDiagnosticReport={() => setActiveScreen('diagnostic_report')}
           />
         );
 
@@ -660,26 +647,11 @@ export default function App() {
         return (
           <WrongQuestionsView
             wrongQuestions={wrongQuestions}
-            questionBank={questionBank}
             currentSubject={student.currentSubject}
-            selectedKnowledgePointTitle={selectedKnowledgePointTitle}
-            workspaceMode={wrongWorkspaceMode}
-            onWorkspaceModeChange={(mode) => {
-              setWrongWorkspaceMode(mode);
-              if (mode === 'bank') {
-                setSelectedKnowledgePointTitle(null);
-                setSelectedKnowledgePointCode(null);
-              }
-            }}
-            onStartKnowledgeStudy={(title) => {
-              selectKnowledgePoint(title);
-              setActiveScreen('knowledge_study');
-            }}
-            onOpenWrongQuestion={(item) => {
-              selectWrongQuestion(item);
+            onOpenWrongQuestion={(question) => {
+              selectWrongQuestion(question);
               setActiveScreen('instant_learning');
             }}
-            onStartQuestionBankPractice={() => setActiveScreen('practice')}
           />
         );
 

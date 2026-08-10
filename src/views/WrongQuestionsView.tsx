@@ -1,221 +1,87 @@
-import React, { useMemo, useState } from 'react';
-import { ArrowLeft, BookOpen, ChevronDown, ChevronRight, ChevronUp, Lightbulb, Play, Sparkles } from 'lucide-react';
-import { QuizQuestion, SubjectType, WrongQuestion } from '../types';
+import React, { useState } from 'react';
+import { BookOpenCheck, ChevronDown, ChevronUp, Download, Sparkles, X } from 'lucide-react';
+import { SubjectType, WrongQuestion } from '../types';
 import { CustomDropdownSelect } from '../components/SubjectSelect';
 
 interface WrongQuestionsViewProps {
   wrongQuestions: WrongQuestion[];
-  questionBank: QuizQuestion[];
   currentSubject: SubjectType;
-  selectedKnowledgePointTitle?: string | null;
-  workspaceMode: 'wrong' | 'bank';
-  onWorkspaceModeChange: (mode: 'wrong' | 'bank') => void;
-  onStartKnowledgeStudy: (title: string) => void;
-  onOpenWrongQuestion: (item: WrongQuestion) => void;
-  onStartQuestionBankPractice: () => void;
+  onOpenWrongQuestion: (question: WrongQuestion) => void;
 }
 
-const SUBJECTS = ['全部学科', '数学', '物理', '化学', '生物', '英语', '语文', '历史', '地理', '政治'];
+const SUBJECTS = ['全科', '数学', '物理', '化学', '生物', '英语', '语文', '历史', '地理', '政治'];
 
 export const WrongQuestionsView: React.FC<WrongQuestionsViewProps> = ({
   wrongQuestions,
-  questionBank,
   currentSubject,
-  selectedKnowledgePointTitle,
-  workspaceMode,
-  onWorkspaceModeChange,
-  onStartKnowledgeStudy,
   onOpenWrongQuestion,
-  onStartQuestionBankPractice,
 }) => {
   const [subjectFilter, setSubjectFilter] = useState<string>(currentSubject);
-  const [selectedWeakTitle, setSelectedWeakTitle] = useState<string | null>(null);
   const [expandedWrongIds, setExpandedWrongIds] = useState<string[]>([]);
-  const [expandedBankIds, setExpandedBankIds] = useState<string[]>([]);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [includeExported, setIncludeExported] = useState(false);
+  const [exportedWrongIds, setExportedWrongIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kaiqiao-exported-wrong-ids') || '[]') as string[]; } catch { return []; }
+  });
 
   const toggleWrongQuestion = (id: string) => {
     setExpandedWrongIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   };
 
-  const toggleBankQuestion = (id: string) => {
-    setExpandedBankIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+  const collectedWrongQuestions = wrongQuestions.filter((item) => subjectFilter === '全科' || item.subject === subjectFilter);
+  const questionsToExport = includeExported ? collectedWrongQuestions : collectedWrongQuestions.filter((question) => !exportedWrongIds.includes(question.id));
+  const handleExportWrongQuestions = () => {
+    if (questionsToExport.length === 0) return;
+    const quote = (value: unknown) => `"${String(value ?? '').replace(/\r?\n/g, ' ').replace(/"/g, '""')}"`;
+    const optionText = (question: WrongQuestion, key: string) => question.options?.find((option) => option.key === key)?.text || '';
+    const rows = questionsToExport.map((question) => [question.questionText, optionText(question, 'A'), optionText(question, 'B'), optionText(question, 'C'), optionText(question, 'D')]);
+    const csv = `\uFEFF${[['题目', '选项 A', '选项 B', '选项 C', '选项 D'], ...rows].map((row) => row.map(quote).join(',')).join('\r\n')}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `错题导出-${subjectFilter}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    const nextIds = [...new Set([...exportedWrongIds, ...questionsToExport.map((question) => question.id)])];
+    setExportedWrongIds(nextIds);
+    localStorage.setItem('kaiqiao-exported-wrong-ids', JSON.stringify(nextIds));
+    setShowExportModal(false);
   };
 
-  const weakKnowledgeItems = useMemo(() => {
-    const stats = new Map<string, { subject: SubjectType; wrongCount: number }>();
-    wrongQuestions
-      .filter((item) => subjectFilter === '全部学科' || item.subject === subjectFilter)
-      .forEach((item) => {
-        const points = item.knowledgePoints?.length ? [...new Set(item.knowledgePoints)] : [item.topic];
-        points.forEach((title) => {
-          const current = stats.get(title) || { subject: item.subject, wrongCount: 0 };
-          current.wrongCount += 1;
-          stats.set(title, current);
-        });
-      });
-
-    return Array.from(stats.entries())
-      .map(([title, item]) => ({ ...item, title }))
-      .sort((a, b) => b.wrongCount - a.wrongCount || a.title.localeCompare(b.title));
-  }, [subjectFilter, wrongQuestions]);
-
-  const normalizeTitle = (value: string) => value.replace(/[\s的与及·、（）()Δ]/g, '').toLowerCase();
-  const bankQuestions = questionBank.filter((item) => {
-    if (item.subject !== currentSubject) return false;
-    if (!selectedKnowledgePointTitle) return true;
-    const questionTitle = normalizeTitle(item.knowledgePoint);
-    const selectedTitle = normalizeTitle(selectedKnowledgePointTitle);
-    return questionTitle.includes(selectedTitle) || selectedTitle.includes(questionTitle);
-  });
-
-  const switcher = (
-    <div className="grid grid-cols-2 rounded-xl bg-slate-100 p-1">
-      <button type="button" onClick={() => onWorkspaceModeChange('wrong')} className={`rounded-lg py-2 text-xs font-bold transition-all ${workspaceMode === 'wrong' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}>薄弱知识点</button>
-      <button type="button" onClick={() => onWorkspaceModeChange('bank')} className={`rounded-lg py-2 text-xs font-bold transition-all ${workspaceMode === 'bank' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}>题库练习</button>
-    </div>
-  );
-
-  const overviewBar = (
-    <div className="flex items-center justify-between gap-3">
-      <div><h2 className="flex items-center gap-1.5 text-base font-extrabold text-slate-900"><Lightbulb className="h-5 w-5 fill-amber-400 text-amber-500" />薄弱知识点</h2><p className="mt-1 text-xs text-slate-500">根据已收录错题自动归纳</p></div>
-      <div className="w-32 shrink-0"><CustomDropdownSelect value={subjectFilter} onChange={setSubjectFilter} options={SUBJECTS} placeholder="全部学科" /></div>
-    </div>
-  );
-
-  if (workspaceMode === 'bank') {
-    return (
-      <div className="space-y-4 px-5 pb-28 pt-4 animate-fade-in">
-        {overviewBar}
-        {switcher}
-        <div className="rounded-2xl border border-emerald-200/70 bg-emerald-50/70 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0"><p className="text-[10px] font-bold text-emerald-600">已学知识点题库</p><h2 className="mt-1 truncate text-sm font-extrabold text-slate-900">{selectedKnowledgePointTitle || `${currentSubject}已学知识点`}</h2><p className="mt-1 text-xs text-slate-500">共匹配 {bankQuestions.length} 道题</p></div>
-            <button type="button" disabled={bankQuestions.length === 0} onClick={onStartQuestionBankPractice} className="flex shrink-0 items-center gap-1 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-xs disabled:bg-slate-200 disabled:text-slate-400"><Play className="h-3.5 w-3.5 fill-current" />开始练习</button>
-          </div>
-        </div>
-        <div className="space-y-2.5">
-          {bankQuestions.map((question, index) => {
-            const isExpanded = expandedBankIds.includes(question.id);
-            const answer = question.correctOptionKey || question.sampleFinalAnswer || '请参考标准解题过程';
-            return (
-              <div key={question.id} className={`overflow-hidden rounded-2xl border bg-white shadow-2xs transition-colors ${isExpanded ? 'border-emerald-300' : 'border-slate-200/80 hover:border-emerald-200'}`}>
-                <button
-                  type="button"
-                  onClick={() => toggleBankQuestion(question.id)}
-                  aria-expanded={isExpanded}
-                  className="w-full p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700"><BookOpen className="h-3.5 w-3.5" />第 {index + 1} 题</span>
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
-                      {isExpanded ? '收起详情' : '查看答案与解析'}
-                      {isExpanded ? <ChevronUp className="h-4 w-4 text-emerald-600" /> : <ChevronDown className="h-4 w-4" />}
-                    </span>
-                  </div>
-                  <p className={`mt-2 text-xs font-bold leading-relaxed text-slate-900 ${isExpanded ? '' : 'line-clamp-2'}`}>{question.questionText}</p>
-                  <p className="mt-2 truncate text-[10px] font-medium text-slate-400">考点：{question.knowledgePoint}</p>
-                </button>
-
-                {isExpanded && (
-                  <div className="space-y-4 border-t border-slate-100 px-4 pb-4 pt-3 animate-fade-in">
-                    {question.options?.length ? (
-                      <div className="space-y-2">
-                        <p className="text-xs font-black text-slate-700">题目选项</p>
-                        <div className="grid gap-2 md:grid-cols-2">
-                          {question.options.map((option) => {
-                            const isCorrect = option.key === question.correctOptionKey;
-                            return (
-                              <div key={option.key} className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium ${isCorrect ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
-                                <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-black ${isCorrect ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200'}`}>{option.key}</span>
-                                <span>{option.text}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                      <p className="text-[10px] font-bold text-emerald-700/70">正确答案</p>
-                      <p className="mt-1 text-sm font-black text-emerald-900">{answer}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="flex items-center gap-1.5 text-xs font-black text-slate-800"><Sparkles className="h-4 w-4 text-emerald-600" />题目解析</p>
-                      <div className="space-y-1.5 rounded-xl bg-slate-50 p-3 text-xs font-medium leading-5 text-slate-600">
-                        {question.sampleStepSolution?.length
-                          ? question.sampleStepSolution.map((step, stepIndex) => <p key={stepIndex}>{step}</p>)
-                          : <p>{question.aiHint || '根据题目条件逐步分析，得出上述正确答案。'}</p>}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          {bankQuestions.length === 0 && <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center"><BookOpen className="mx-auto h-9 w-9 text-slate-300" /><p className="mt-2 text-sm font-bold text-slate-700">该知识点暂无匹配题目</p></div>}
-        </div>
-      </div>
-    );
-  }
-
-  const relatedWrongQuestions = selectedWeakTitle
-    ? wrongQuestions.filter((item) => (item.knowledgePoints?.length ? item.knowledgePoints : [item.topic]).includes(selectedWeakTitle))
-    : [];
-
-  if (selectedWeakTitle) {
-    return (
-      <div className="space-y-4 px-5 pb-28 pt-4 animate-fade-in">
-        {switcher}
-        <div className="flex items-center gap-2"><button type="button" onClick={() => setSelectedWeakTitle(null)} className="rounded-full p-1 text-slate-500 hover:bg-slate-100"><ArrowLeft className="h-4 w-4" /></button><div><h2 className="text-base font-extrabold text-slate-900">{selectedWeakTitle}</h2><p className="mt-0.5 text-xs text-slate-500">已收录错题 {relatedWrongQuestions.length} 题</p></div></div>
-        <div className="space-y-3">
-          {relatedWrongQuestions.map((item) => {
-            const isExpanded = expandedWrongIds.includes(item.id);
-            return (
-              <div
-                key={item.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => toggleWrongQuestion(item.id)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') toggleWrongQuestion(item.id);
-                }}
-                className={`w-full cursor-pointer space-y-3 rounded-2xl border bg-white p-4 text-left card-shadow transition-colors ${isExpanded ? 'border-emerald-300' : 'border-slate-200/80 hover:border-emerald-300'}`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2"><span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">{item.subject}</span><span className="rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-600">{item.errorCategory}</span></div>
-                  <div className="flex items-center gap-1.5"><span className="text-[10px] font-mono text-slate-400">{item.addedAt || item.date}</span>{isExpanded ? <ChevronUp className="h-4 w-4 text-emerald-600" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}</div>
-                </div>
-                <p className={`text-sm font-bold leading-relaxed text-slate-900 ${isExpanded ? '' : 'line-clamp-2'}`}>{item.questionText}</p>
-                {isExpanded && (
-                  <div className="space-y-3 border-t border-slate-100 pt-3 animate-fade-in" onClick={(event) => event.stopPropagation()}>
-                    {item.options?.length ? <div className="space-y-2"><p className="text-xs font-bold text-slate-600">题目选项</p><div className="space-y-1.5">{item.options.map((option) => { const isCorrect = item.correctAnswer.includes(option.key); const isUser = item.userAnswer.includes(option.key); return <div key={option.key} className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium ${isCorrect ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : isUser ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-slate-50 text-slate-700'}`}><span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${isCorrect ? 'bg-emerald-600 text-white' : isUser ? 'bg-rose-500 text-white' : 'border border-slate-300 bg-white text-slate-600'}`}>{option.key}</span><span>{option.text}</span></div>; })}</div></div> : null}
-                    <div className="space-y-1.5"><p className="flex items-center gap-1 text-xs font-bold text-emerald-800"><Sparkles className="h-4 w-4 text-emerald-600" />解析</p><div className="space-y-1.5 text-xs font-medium leading-relaxed text-slate-600">{item.steps?.length ? item.steps.map((step, index) => <p key={index}>{step}</p>) : <p>围绕“{item.topic}”的关键条件逐步判断，正确答案为：{item.correctAnswer}。</p>}</div></div>
-                    <button type="button" onClick={() => onOpenWrongQuestion(item)} className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white">复习</button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4 px-5 pb-28 pt-4 animate-fade-in">
-      {overviewBar}
-      {switcher}
-
-      <div className="space-y-3">
-        {weakKnowledgeItems.map((item) => (
-          <div key={`${item.subject}-${item.title}`} className="rounded-2xl border border-slate-200/80 bg-white p-4 card-shadow">
-            <div className="flex items-center justify-between gap-3"><span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">{item.subject}</span><span className="shrink-0 rounded-full bg-rose-50 px-2 py-1 text-[10px] font-bold text-rose-600">关联错题 {item.wrongCount} 题</span></div>
-            <div className="mt-3 flex items-center justify-between gap-3"><h3 className="min-w-0 truncate text-sm font-extrabold text-slate-900">{item.title}</h3><div className="flex shrink-0 items-center gap-2"><button type="button" onClick={() => onStartKnowledgeStudy(item.title)} className="rounded-xl border border-emerald-300 px-3 py-1.5 text-xs font-bold text-emerald-700">学习知识点</button><button type="button" onClick={() => setSelectedWeakTitle(item.title)} className="flex items-center gap-0.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white">查看错题<ChevronRight className="h-3.5 w-3.5" /></button></div></div>
-          </div>
-        ))}
-        {weakKnowledgeItems.length === 0 && <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center"><Lightbulb className="mx-auto h-9 w-9 text-slate-300" /><p className="mt-2 text-sm font-bold text-slate-700">暂无薄弱知识点</p><p className="mt-1 text-xs text-slate-400">拍照批改并收录错题后，会自动归纳</p></div>}
+    <div className="space-y-4 px-4 pb-28 pt-4 animate-fade-in md:px-8 md:pt-6 lg:px-10">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="flex items-center gap-1.5 text-base font-extrabold text-slate-900"><BookOpenCheck className="h-5 w-5 text-emerald-600" />我的错题</h2>
+          <p className="mt-1 text-xs text-slate-500">统一查看、复习与导出已收录错题</p>
+        </div>
+        <div className="w-32 shrink-0"><CustomDropdownSelect value={subjectFilter} onChange={setSubjectFilter} options={SUBJECTS} placeholder="选择学科" /></div>
       </div>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div><h3 className="text-sm font-black text-slate-900">已收录错题</h3><p className="mt-0.5 text-[11px] text-slate-500">共 {collectedWrongQuestions.length} 题</p></div>
+          <button type="button" onClick={() => setShowExportModal(true)} className="flex items-center gap-1 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-700"><Download className="h-3.5 w-3.5" />导出</button>
+        </div>
+        <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
+          {collectedWrongQuestions.map((question) => {
+            const isExpanded = expandedWrongIds.includes(question.id);
+            return (
+              <div key={question.id} className={`self-start overflow-hidden rounded-2xl border bg-white shadow-2xs transition-colors ${isExpanded ? 'border-emerald-300' : 'border-slate-200/80 hover:border-emerald-200'}`}>
+                <button type="button" onClick={() => toggleWrongQuestion(question.id)} aria-expanded={isExpanded} className="w-full p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500">
+                  <div className="flex items-center justify-between gap-2"><div className="flex items-center gap-2"><span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-600">{question.subject}</span><span className="rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-600">{question.errorCategory}</span></div><span className="flex items-center gap-1 text-[10px] font-medium text-slate-400">{question.addedAt || question.date}{isExpanded ? <ChevronUp className="h-4 w-4 text-emerald-600" /> : <ChevronDown className="h-4 w-4" />}</span></div>
+                  <p className={`mt-3 text-sm font-bold leading-relaxed text-slate-900 ${isExpanded ? '' : 'line-clamp-2'}`}>{question.questionText}</p>
+                  <p className="mt-2 truncate text-[10px] font-semibold text-emerald-600">考点：{question.knowledgePoints?.join('、') || question.topic}</p>
+                </button>
+                {isExpanded && <div className="space-y-3 border-t border-slate-100 px-4 pb-4 pt-3 animate-fade-in">{question.options?.length ? <div className="space-y-2"><p className="text-xs font-bold text-slate-600">题目选项</p><div className="space-y-1.5">{question.options.map((option) => { const isCorrect = question.correctAnswer.includes(option.key); const isUser = question.userAnswer.includes(option.key); return <div key={option.key} className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium ${isCorrect ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : isUser ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-slate-50 text-slate-700'}`}><span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${isCorrect ? 'bg-emerald-600 text-white' : isUser ? 'bg-rose-500 text-white' : 'border border-slate-300 bg-white text-slate-600'}`}>{option.key}</span><span>{option.text}</span></div>; })}</div></div> : null}<div className="rounded-xl bg-slate-50 p-3"><p className="flex items-center gap-1 text-xs font-bold text-emerald-800"><Sparkles className="h-4 w-4 text-emerald-600" />答案与解析</p><p className="mt-2 text-xs font-bold text-slate-800">正确答案：{question.correctAnswer}</p><div className="mt-2 space-y-1 text-xs leading-relaxed text-slate-600">{question.steps?.length ? question.steps.map((step, index) => <p key={index}>{step}</p>) : <p>围绕“{question.topic}”的关键条件逐步判断。</p>}</div></div><button type="button" onClick={() => onOpenWrongQuestion(question)} className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white">重新复习</button></div>}
+              </div>
+            );
+          })}
+          {collectedWrongQuestions.length === 0 && <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center md:col-span-2"><BookOpenCheck className="mx-auto h-9 w-9 text-slate-300" /><p className="mt-2 text-sm font-bold text-slate-700">还没有收录错题</p><p className="mt-1 text-xs text-slate-400">完成拍照批改后，可选择加入错题本</p></div>}
+        </div>
+      </section>
+
+      {showExportModal && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"><div className="w-full max-w-sm space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl"><div className="flex items-center justify-between"><h3 className="flex items-center gap-2 text-base font-extrabold text-slate-900"><Download className="h-5 w-5 text-emerald-600" />导出错题</h3><button type="button" aria-label="关闭导出错题" onClick={() => setShowExportModal(false)} className="p-1 text-slate-400"><X className="h-5 w-5" /></button></div><p className="text-xs leading-relaxed text-slate-500">导出当前学科的题目和选项，不包含答案与解析。</p><label className="flex cursor-pointer items-start gap-2 rounded-xl bg-slate-50 p-3"><input type="checkbox" checked={includeExported} onChange={(event) => setIncludeExported(event.target.checked)} className="mt-0.5 h-4 w-4 accent-emerald-600" /><span className="text-xs leading-relaxed text-slate-600"><b className="text-slate-800">包含此前已导出的题目</b><br />不勾选时，仅导出尚未导出的题目。</span></label><p className="text-xs font-semibold text-slate-500">本次将导出 {questionsToExport.length} 题</p><div className="flex gap-2"><button type="button" onClick={() => setShowExportModal(false)} className="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-600">取消</button><button type="button" disabled={questionsToExport.length === 0} onClick={handleExportWrongQuestions} className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white disabled:bg-slate-200 disabled:text-slate-400">确认导出</button></div></div></div>}
     </div>
   );
 };

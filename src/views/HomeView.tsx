@@ -8,8 +8,9 @@ import {
   Clock3,
   RotateCcw,
   Sparkles,
+  X,
 } from 'lucide-react';
-import { StudentProfile } from '../types';
+import { StudentProfile, WrongQuestion } from '../types';
 import { HomeRecommendation } from '../utils/homeRecommendations';
 import { CheckInCalendarModal } from '../components/CheckInCalendarModal';
 
@@ -18,11 +19,10 @@ interface HomeViewProps {
   todayTaskCompleted: number;
   todayTaskTotal: number;
   recommendations: HomeRecommendation[];
+  wrongQuestions: WrongQuestion[];
   onStartTodayLearning: () => void;
   onOpenKnowledgePoint: (title: string, code: string) => void;
-  onPracticeKnowledgePoint: (title: string, code: string) => void;
   onOpenStudyCatalog: () => void;
-  onOpenDiagnosticReport: () => void;
 }
 
 const WEEK_DAYS = ['一', '二', '三', '四', '五', '六', '日'];
@@ -49,6 +49,16 @@ const recommendationCopy = (item: HomeRecommendation) => {
     };
   }
 
+  if (item.masteryState === '已练习') {
+    return {
+      badge: '已练习',
+      action: '举一反三',
+      detail: `已完成 ${item.practicedQuestionCount} 道，继续巩固薄弱环节`,
+      icon: <RotateCcw className="h-4 w-4" />,
+      tone: 'emerald',
+    };
+  }
+
   return {
     badge: '未学习',
     action: '开始学习',
@@ -63,13 +73,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
   todayTaskCompleted,
   todayTaskTotal,
   recommendations,
+  wrongQuestions,
   onStartTodayLearning,
   onOpenKnowledgePoint,
-  onPracticeKnowledgePoint,
   onOpenStudyCatalog,
-  onOpenDiagnosticReport,
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isWeakPointsOpen, setIsWeakPointsOpen] = useState(false);
+  const [expandedRecommendationCode, setExpandedRecommendationCode] = useState<string | null>(null);
+  const [visibleWrongCode, setVisibleWrongCode] = useState<string | null>(null);
   const mascotRef = useRef<HTMLDivElement>(null);
   const currentDayIndex = (new Date().getDay() + 6) % 7;
   const completionPercent = todayTaskTotal > 0
@@ -110,13 +122,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
     return () => media.revert();
   }, []);
 
-  const handleRecommendation = (item: HomeRecommendation) => {
-    if (item.masteryState === '已学习') {
-      onPracticeKnowledgePoint(item.title, item.code);
-      return;
-    }
-    onOpenKnowledgePoint(item.title, item.code);
+  const normalizeTitle = (value: string) => value.replace(/[\s的与及·、（）()Δ]/g, '').toLowerCase();
+  const getRelatedWrongQuestions = (item: HomeRecommendation) => {
+    const target = normalizeTitle(item.title);
+    return wrongQuestions.filter((question) => {
+      if (question.subject !== item.subject) return false;
+      const points = question.knowledgePoints?.length ? question.knowledgePoints : [question.topic];
+      return points.some((point) => {
+        const normalizedPoint = normalizeTitle(point);
+        return target.includes(normalizedPoint) || normalizedPoint.includes(target)
+          || (normalizedPoint.length >= 4 && Array.from({ length: normalizedPoint.length - 1 }, (_, index) => normalizedPoint.slice(index, index + 2))
+            .filter((gram) => target.includes(gram)).length >= 2);
+      });
+    });
   };
+
+  const getRelatedWrongCount = (item: HomeRecommendation) => getRelatedWrongQuestions(item).length;
+
+  const totalRelatedWrongCount = recommendations.reduce((sum, item) => sum + getRelatedWrongCount(item), 0);
 
   return (
     <div className="min-h-full space-y-4 px-4 pb-28 pt-3 animate-fade-in md:grid md:grid-cols-12 md:items-stretch md:gap-5 md:space-y-0 md:px-8 md:pt-6 lg:px-10">
@@ -245,7 +268,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
           <button
             type="button"
-            onClick={onOpenStudyCatalog}
+            onClick={() => setIsWeakPointsOpen(true)}
             className="mt-1 text-[11px] font-black text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             更多
@@ -273,34 +296,61 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 : copy.tone === 'amber'
                   ? 'bg-amber-50 text-amber-700'
                   : 'bg-slate-100 text-slate-500';
+              const isExpanded = expandedRecommendationCode === item.code;
+              const isShowingWrongQuestions = visibleWrongCode === item.code;
+              const relatedWrongQuestions = getRelatedWrongQuestions(item);
 
               return (
-                <button
-                  type="button"
-                  key={item.code}
-                  onClick={() => handleRecommendation(item)}
-                  className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500 active:bg-emerald-50/60"
-                  aria-label={`${copy.action}：${item.title}`}
-                >
-                  <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${iconTone}`}>
-                    <span className="text-base font-black">{index + 1}</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-[10px] font-bold text-emerald-700/70">{item.subject} · {item.sectionTitle}</span>
-                      <span className={`rounded-md px-1.5 py-0.5 text-[9px] font-black ${badgeTone}`}>{copy.badge}</span>
+                <div key={item.code} className={`transition-colors ${isExpanded ? 'bg-emerald-50/35' : ''}`}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExpandedRecommendationCode(isExpanded ? null : item.code);
+                      if (isExpanded) setVisibleWrongCode(null);
+                    }}
+                    aria-expanded={isExpanded}
+                    className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500 active:bg-emerald-50/60"
+                    aria-label={`打开知识点：${item.title}`}
+                  >
+                    <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${iconTone}`}>
+                      <span className="text-base font-black">{index + 1}</span>
                     </div>
-                    <p className="mt-1 line-clamp-2 text-[14px] font-black leading-5 text-slate-900">{item.title}</p>
-                    <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-slate-400">
-                      <Clock3 className="h-3 w-3" />
-                      <span className="truncate">{copy.detail}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-emerald-700/70">{item.subject} · {item.sectionTitle}</span>
+                        <span className={`rounded-md px-1.5 py-0.5 text-[9px] font-black ${badgeTone}`}>{copy.badge}</span>
+                        <span className="text-[9px] font-bold text-rose-500">关联错题 {relatedWrongQuestions.length} 道</span>
+                      </div>
+                      <p className="mt-1 line-clamp-2 text-[14px] font-black leading-5 text-slate-900">{item.title}</p>
+                      <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-slate-400">
+                        <Clock3 className="h-3 w-3" />
+                        <span className="truncate">{copy.detail}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-2 text-[10px] font-black text-emerald-700 transition group-hover:bg-emerald-100">
-                    {copy.icon}
-                    <span className="hidden min-[370px]:inline">{copy.action}</span>
-                  </div>
-                </button>
+                    <ChevronRight className={`h-4 w-4 shrink-0 text-emerald-600 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                  </button>
+
+                  {isExpanded && (
+                    <div className="space-y-3 border-t border-emerald-100 px-4 pb-4 pt-3 animate-fade-in">
+                      <div className="grid grid-cols-2 gap-2">
+                        <button type="button" onClick={() => onOpenKnowledgePoint(item.title, item.code)} className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-xs font-black text-white transition hover:bg-emerald-700 active:scale-[0.98]"><BookOpen className="h-4 w-4" />学习</button>
+                        <button type="button" onClick={() => setVisibleWrongCode(isShowingWrongQuestions ? null : item.code)} className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-white text-xs font-black text-emerald-700 transition hover:bg-emerald-50 active:scale-[0.98]"><CircleCheck className="h-4 w-4" />{isShowingWrongQuestions ? '收起错题' : '查看错题'}</button>
+                      </div>
+                      {isShowingWrongQuestions && (
+                        <div className="space-y-2">
+                          {relatedWrongQuestions.map((question, wrongIndex) => (
+                            <div key={question.id} className="rounded-xl border border-slate-200 bg-white p-3">
+                              <div className="flex items-center justify-between gap-2"><span className="text-[10px] font-black text-rose-500">错题 {wrongIndex + 1}</span><span className="text-[9px] font-bold text-slate-400">{question.errorCategory}</span></div>
+                              <p className="mt-1.5 line-clamp-3 text-xs font-bold leading-5 text-slate-800">{question.questionText}</p>
+                              <p className="mt-1 text-[10px] font-medium text-emerald-700">正确答案：{question.correctAnswer}</p>
+                            </div>
+                          ))}
+                          {relatedWrongQuestions.length === 0 && <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4 text-center text-xs font-medium text-slate-400">该知识点暂时没有已收录错题</div>}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -310,8 +360,67 @@ export const HomeView: React.FC<HomeViewProps> = ({
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         student={student}
-        onOpenReport={onOpenDiagnosticReport}
       />
+      {isWeakPointsOpen && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/40 px-0 backdrop-blur-[2px] md:items-center md:p-6" role="presentation" onMouseDown={() => setIsWeakPointsOpen(false)}>
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="weak-points-title"
+            onMouseDown={(event) => event.stopPropagation()}
+            className="max-h-[82vh] w-full overflow-hidden rounded-t-[28px] bg-white shadow-2xl animate-fade-in md:max-w-3xl md:rounded-[28px]"
+          >
+            <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-slate-200 md:hidden" />
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 pb-4 pt-5 md:px-7">
+              <div>
+                <p className="text-[10px] font-black tracking-[0.12em] text-emerald-700/65">根据错题自动归纳</p>
+                <h2 id="weak-points-title" className="mt-1 text-xl font-black text-slate-950">全部薄弱知识点</h2>
+                <p className="mt-1 text-xs font-medium text-slate-500">共 {recommendations.length} 个知识点，关联错题 {totalRelatedWrongCount} 道</p>
+              </div>
+              <button type="button" onClick={() => setIsWeakPointsOpen(false)} aria-label="关闭薄弱知识点" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="max-h-[calc(82vh-102px)] divide-y divide-slate-100 overflow-y-auto overscroll-contain px-2 pb-[max(16px,env(safe-area-inset-bottom))] md:px-4">
+              {recommendations.map((item, index) => {
+                const isExpanded = expandedRecommendationCode === item.code;
+                const isShowingWrongQuestions = visibleWrongCode === item.code;
+                const relatedWrongQuestions = getRelatedWrongQuestions(item);
+                return (
+                  <div key={`weak-${item.code}`} className={`rounded-xl transition-colors ${isExpanded ? 'bg-emerald-50/50' : ''}`}>
+                    <button type="button" onClick={() => { setExpandedRecommendationCode(isExpanded ? null : item.code); if (isExpanded) setVisibleWrongCode(null); }} aria-expanded={isExpanded} className="group flex w-full items-center gap-3 rounded-xl px-3 py-4 text-left hover:bg-emerald-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-50 text-base font-black text-emerald-700">{index + 1}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-emerald-700/70">{item.subject} · {item.sectionTitle}<span className="rounded-md bg-rose-50 px-1.5 py-0.5 text-[9px] text-rose-500">关联错题 {relatedWrongQuestions.length} 道</span></span>
+                        <span className="mt-1 block truncate text-sm font-black text-slate-900">{item.title}</span>
+                      </span>
+                      <ChevronRight className={`h-4 w-4 shrink-0 text-emerald-600 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                    </button>
+                    {isExpanded && (
+                      <div className="space-y-3 border-t border-emerald-100 px-3 pb-4 pt-3 animate-fade-in">
+                        <div className="grid grid-cols-2 gap-2">
+                          <button type="button" onClick={() => { setIsWeakPointsOpen(false); onOpenKnowledgePoint(item.title, item.code); }} className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-xs font-black text-white"><BookOpen className="h-4 w-4" />学习</button>
+                          <button type="button" onClick={() => setVisibleWrongCode(isShowingWrongQuestions ? null : item.code)} className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-white text-xs font-black text-emerald-700"><CircleCheck className="h-4 w-4" />{isShowingWrongQuestions ? '收起错题' : '查看错题'}</button>
+                        </div>
+                        {isShowingWrongQuestions && (
+                          <div className="space-y-2">
+                            {relatedWrongQuestions.map((question, wrongIndex) => (
+                              <div key={`drawer-${question.id}`} className="rounded-xl border border-slate-200 bg-white p-3">
+                                <div className="flex items-center justify-between gap-2"><span className="text-[10px] font-black text-rose-500">错题 {wrongIndex + 1}</span><span className="text-[9px] font-bold text-slate-400">{question.errorCategory}</span></div>
+                                <p className="mt-1.5 line-clamp-3 text-xs font-bold leading-5 text-slate-800">{question.questionText}</p>
+                                <p className="mt-1 text-[10px] font-medium text-emerald-700">正确答案：{question.correctAnswer}</p>
+                              </div>
+                            ))}
+                            {relatedWrongQuestions.length === 0 && <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4 text-center text-xs font-medium text-slate-400">该知识点暂时没有已收录错题</div>}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 };

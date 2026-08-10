@@ -1,19 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, 
-  TrendingUp, 
   PieChart,
   AlertTriangle,
-  ArrowRight,
   BookOpen,
 } from 'lucide-react';
 import gsap from 'gsap';
-import { StudentProfile, ScreenType, LearningEvidenceBase, ERROR_CATEGORIES } from '../types';
+import { StudentProfile, LearningEvidenceBase, ERROR_CATEGORIES } from '../types';
 
 interface DiagnosticReportViewProps {
   student: StudentProfile;
   learningEvidence: LearningEvidenceBase;
-  onNavigateToScreen: (screen: ScreenType) => void;
 }
 
 const ALL_SUBJECT_OPTIONS = [
@@ -207,13 +204,11 @@ interface WeakKnowledgePointItem {
   cycleQuestions: number;
   cycleAccuracy: number; // percentage e.g. 45
   currentStatus: '概念不足' | '应用不足' | '需复习' | '巩固中';
-  recommendAction: '复习概念' | '加强应用' | '重做错题';
 }
 
 export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
   student,
   learningEvidence,
-  onNavigateToScreen,
 }) => {
   const [subject, setSubject] = useState<string>('全科');
   const [timeRange, setTimeRange] = useState<'7days' | '30days'>('7days');
@@ -249,9 +244,6 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
       currentStatus: point.status === '未学习' ? '概念不足' as const
         : point.status === '学习中' ? '需复习' as const
         : '应用不足' as const,
-      recommendAction: point.status === '未学习' || point.status === '学习中'
-        ? '复习概念' as const
-        : point.status === '已学习' ? '加强应用' as const : '重做错题' as const,
     }))
     .sort((a, b) => a.cycleAccuracy - b.cycleAccuracy)
     .slice(0, 3);
@@ -394,17 +386,7 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
               key={item.id}
               className="p-3 bg-slate-50/90 rounded-xl border border-slate-200/80 space-y-2"
             >
-              <div className="flex items-start justify-between gap-2">
-                <h4 className="text-xs font-bold text-slate-900 leading-snug flex-1">
-                  {item.name}
-                </h4>
-                <button
-                  onClick={() => onNavigateToScreen('knowledge_study')}
-                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg shrink-0 active:scale-95 transition-all shadow-2xs"
-                >
-                  {item.recommendAction}
-                </button>
-              </div>
+              <h4 className="text-xs font-bold text-slate-900 leading-snug">{item.name}</h4>
 
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
                 <span className="text-slate-600">
@@ -463,57 +445,6 @@ export const DiagnosticReportView: React.FC<DiagnosticReportViewProps> = ({
         </p>
       </div>
 
-      {/* Subsequent Learning Actions */}
-      <div className="bg-white p-4 rounded-2xl card-shadow border border-slate-200/80 space-y-3">
-        <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-          <TrendingUp className="w-4 h-4 text-emerald-600" />
-          后续推荐学习
-        </h3>
-
-        <div className="space-y-2">
-          {/* Priority 1: 复习最新错题 */}
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs">
-            <div>
-              <span className="font-bold text-slate-900">1. 复习最新错题</span>
-              <p className="text-[11px] text-slate-500 mt-0.5">针对近期错题归纳中的去括号计算失误进行强化</p>
-            </div>
-            <button
-              onClick={() => onNavigateToScreen('instant_learning')}
-              className="px-3 py-1 bg-emerald-600 text-white text-[11px] font-bold rounded-full hover:bg-emerald-700 flex items-center gap-1 shrink-0"
-            >
-              错题强化 <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-
-          {/* Priority 2: 补学概念薄弱 */}
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs">
-            <div>
-              <span className="font-bold text-slate-900">2. 补学概念薄弱</span>
-              <p className="text-[11px] text-slate-500 mt-0.5">优先学习【{primaryWeakPoint?.name || '当前薄弱知识点'}】</p>
-            </div>
-            <button
-              onClick={() => onNavigateToScreen('knowledge_study')}
-              className="px-3 py-1 bg-emerald-600 text-white text-[11px] font-bold rounded-full hover:bg-emerald-700 flex items-center gap-1 shrink-0"
-            >
-              概念补学 <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-
-          {/* Priority 3: 练习应用薄弱 */}
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs">
-            <div>
-              <span className="font-bold text-slate-900">3. 专项题目巩固</span>
-              <p className="text-[11px] text-slate-500 mt-0.5">前往题库进行二次函数精选题练习</p>
-            </div>
-            <button
-              onClick={() => onNavigateToScreen('practice_quiz')}
-              className="px-3 py-1 bg-emerald-600 text-white text-[11px] font-bold rounded-full hover:bg-emerald-700 flex items-center gap-1 shrink-0"
-            >
-              精选练习 <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

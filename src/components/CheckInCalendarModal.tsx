@@ -17,7 +17,6 @@ interface CheckInCalendarModalProps {
   isOpen: boolean;
   onClose: () => void;
   student: StudentProfile;
-  onOpenReport: () => void;
 }
 
 interface DailyRecord {
@@ -150,7 +149,6 @@ export const CheckInCalendarModal: React.FC<CheckInCalendarModalProps> = ({
   isOpen,
   onClose,
   student,
-  onOpenReport,
 }) => {
   const [selectedDay, setSelectedDay] = useState<number>(30); // Default to today (July 30)
   const [showShareToast, setShowShareToast] = useState(false);
@@ -291,22 +289,11 @@ export const CheckInCalendarModal: React.FC<CheckInCalendarModalProps> = ({
           {/* Daily diagnostic summary */}
           {activeRecord.checkedIn && (
                 <div className="rounded-2xl border border-blue-200/70 bg-blue-50/70 p-3 space-y-2.5">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-900">
                       <Target className="h-3.5 w-3.5 text-blue-600" />
                       <span>学习诊断</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onClose();
-                        onOpenReport();
-                      }}
-                      className="flex items-center gap-0.5 text-[10px] font-bold text-blue-700 transition-colors hover:text-blue-900"
-                    >
-                      查看完整报告
-                      <ChevronRight className="h-3 w-3" />
-                    </button>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5 text-center">
                     <div className="rounded-lg bg-white/90 px-1.5 py-2 border border-blue-100">

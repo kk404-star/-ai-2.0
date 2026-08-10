@@ -56,7 +56,7 @@ export const InstantLearningView: React.FC<InstantLearningViewProps> = ({
     return (
       <div className="px-5 py-12 text-center">
         <BookOpenCheck className="mx-auto h-12 w-12 text-slate-300" />
-        <p className="mt-3 text-sm font-bold text-slate-700">请先从今日复习或错题归纳选择一道题</p>
+        <p className="mt-3 text-sm font-bold text-slate-700">请先从今日复习或错题本选择一道题</p>
         <button onClick={onReturnHome} className="mt-4 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white">返回首页</button>
       </div>
     );
@@ -125,7 +125,7 @@ export const InstantLearningView: React.FC<InstantLearningViewProps> = ({
       {completed && (
         <div className={`rounded-2xl p-4 text-white shadow-md ${originalResult && variantResult ? 'bg-gradient-to-r from-emerald-600 to-teal-700' : 'bg-gradient-to-r from-slate-700 to-slate-800'}`}>
           <h4 className="text-sm font-bold">{originalResult && variantResult ? (isDue && wrongItem.reviewStage === 2 ? '两轮验证完成，已掌握' : '本轮复习通过') : '本轮暂未通过'}</h4>
-          <p className="mt-1 text-xs text-white/80">{originalResult && variantResult ? (isDue ? (wrongItem.reviewStage === 2 ? '该错题已归档，可随时在错题归纳中回看。' : '第 3 天将安排第二轮验证。') : '已记录本次自由练习。') : (isDue ? '查看讲解后，系统将在明天重新安排当前轮次。' : '已记录本次自由练习。')}</p>
+          <p className="mt-1 text-xs text-white/80">{originalResult && variantResult ? (isDue ? (wrongItem.reviewStage === 2 ? '该错题已归档，可随时在错题本中回看。' : '第 3 天将安排第二轮验证。') : '已记录本次自由练习。') : (isDue ? '查看讲解后，系统将在明天重新安排当前轮次。' : '已记录本次自由练习。')}</p>
         </div>
       )}
     </div>

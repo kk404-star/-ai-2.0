@@ -10,7 +10,7 @@ export interface HomeRecommendation {
   subject: SubjectType;
   chapterTitle: string;
   sectionTitle: string;
-  masteryState: Extract<MasteryState, '学习中' | '已学习' | '未学习'>;
+  masteryState: Extract<MasteryState, '学习中' | '已学习' | '已练习' | '未学习'>;
   boundQuestionCount: number;
   practicedQuestionCount: number;
   unpracticedQuestionCount: number;
@@ -20,6 +20,7 @@ const STATE_PRIORITY: Record<HomeRecommendation['masteryState'], number> = {
   学习中: 0,
   已学习: 1,
   未学习: 2,
+  已练习: 3,
 };
 
 export function getHomeRecommendations(
@@ -31,8 +32,6 @@ export function getHomeRecommendations(
     .filter((chapter) => chapter.subject === subject)
     .flatMap((chapter) => chapter.children.flatMap((section) =>
       section.children.flatMap((point) => {
-        if (point.masteryState === '已练习') return [];
-
         return [{
           code: point.code,
           title: point.title,

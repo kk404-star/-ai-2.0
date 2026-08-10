@@ -34,7 +34,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     },
     {
       id: 'wrong' as TabType,
-      label: '错题归纳',
+      label: '错题本',
       icon: Layers,
       badge: unreviewedWrongCount > 0 ? unreviewedWrongCount : undefined,
     },
@@ -46,7 +46,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   ];
 
   return (
-    <nav className="sticky bottom-0 left-0 right-0 z-40 w-full rounded-t-2xl border-t border-slate-100 bg-white/95 px-1 pb-2 pt-1.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md md:fixed md:bottom-5 md:left-1/2 md:right-auto md:w-[min(620px,calc(100%-2rem))] md:-translate-x-1/2 md:rounded-2xl md:border md:border-slate-200/80 md:px-3 md:py-2 md:shadow-[0_16px_45px_-22px_rgba(15,23,42,0.4)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 w-full rounded-t-2xl border-t border-slate-100 bg-white/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md md:bottom-5 md:left-1/2 md:right-auto md:w-[min(620px,calc(100%-2rem))] md:-translate-x-1/2 md:rounded-2xl md:border md:border-slate-200/80 md:px-3 md:py-2 md:shadow-[0_16px_45px_-22px_rgba(15,23,42,0.4)]">
       <div className="grid grid-cols-5 items-end text-center">
         {navItems.map((item) => {
           const Icon = item.icon;

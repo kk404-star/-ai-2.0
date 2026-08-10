@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   BadgeInfo,
+  ChartNoAxesCombined,
   CheckCircle2,
   ChevronRight,
   CreditCard,
@@ -145,6 +146,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </button>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white px-3 shadow-sm md:px-5">
+        <MenuItem icon={<ChartNoAxesCombined />} tone="green" title="学习诊断报告" subtitle="查看学习表现、薄弱点与成长趋势" onClick={() => onNavigateToScreen('diagnostic_report')} />
         <MenuItem icon={<UserRound />} tone="green" title="个人资料" subtitle="头像、昵称与学校" onClick={() => onNavigateToScreen('profile_details')} />
         <MenuItem icon={<MessageSquareMore />} tone="blue" title="意见反馈" subtitle="你的建议会帮助我们做得更好" />
         <MenuItem icon={<Info />} tone="violet" title="关于开窍" subtitle="产品介绍与版本信息" />

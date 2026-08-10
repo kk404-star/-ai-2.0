@@ -15,7 +15,8 @@ import {
   Sparkles,
   Eye,
   LayoutGrid,
-  FileCheck
+  FileCheck,
+  Circle,
 } from 'lucide-react';
 import { QuizQuestion, ScreenType, QuestionType, WrongQuestion, SubjectType } from '../types';
 import { sampleQuestionsList } from '../data/initialData';
@@ -34,6 +35,7 @@ interface PracticeViewProps {
   onQuestionCompleted?: (questionId: string) => void;
   onUnresolvedQuestion?: (question: QuizQuestion, userAnswer: string) => void;
   onResolvedInSession?: (question: QuizQuestion, firstWrongAnswer: string) => void;
+  onContinueQuestionBank?: () => void;
 }
 
 export const PracticeView: React.FC<PracticeViewProps> = ({
@@ -50,6 +52,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   onQuestionCompleted,
   onUnresolvedQuestion,
   onResolvedInSession,
+  onContinueQuestionBank,
 }) => {
   const availableQuestionBank = useMemo(
     () => [...questionBank, ...sampleQuestionsList.filter((seedQuestion) => !questionBank.some((question) => question.id === seedQuestion.id))],
@@ -80,6 +83,11 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
         practiceStatus: item.reviewStatus === '已掌握' ? '已练习' : '未练习',
       };
     };
+
+    if (questionBankOnly && !knowledgePointTitle) {
+      const subjectQuestions = availableQuestionBank.filter((item) => !currentSubject || item.subject === currentSubject);
+      return subjectQuestions.map((item, index) => ({ ...item, questionNumber: index + 1, totalQuestions: subjectQuestions.length }));
+    }
 
     if (!knowledgePointTitle) {
       const normalize = (value: string) => value.replace(/[\s的与及·、（）()Δ]/g, '').toLowerCase();
@@ -154,6 +162,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
     uploadedImages: string[];
   }>>({});
   const [showBatchResults, setShowBatchResults] = useState(false);
+  const [isTodayLearningCompleted, setIsTodayLearningCompleted] = useState(false);
   // Question sheet modal
   const [showAnswerSheet, setShowAnswerSheet] = useState(false);
 
@@ -660,18 +669,35 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
               })}
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                const completedIds = getCompletedQuestionIds();
-                onCompleteQuiz?.(completedIds);
-                completedIds.forEach((id) => onQuestionCompleted?.(id));
-                onNavigateToScreen('tab');
-              }}
-              className="h-12 w-full rounded-xl bg-emerald-600 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 active:scale-[0.98]"
-            >
-              完成今日学习
-            </button>
+            {!isTodayLearningCompleted ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const completedIds = getCompletedQuestionIds();
+                  completedIds.forEach((id) => onQuestionCompleted?.(id));
+                  setIsTodayLearningCompleted(true);
+                }}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-emerald-600 bg-white text-sm font-black text-emerald-700 shadow-sm transition hover:bg-emerald-50 active:scale-[0.98]"
+              >
+                <Circle className="h-5 w-5" />
+                完成今日学习
+              </button>
+            ) : (
+              <div className="space-y-2.5 animate-fade-in">
+                <div className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 text-sm font-black text-emerald-800 ring-1 ring-emerald-200">
+                  <CheckCircle2 className="h-5 w-5 fill-emerald-600 text-white" />
+                  今日学习已完成
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onContinueQuestionBank?.()}
+                  className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 active:scale-[0.98]"
+                >
+                  继续练题
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
